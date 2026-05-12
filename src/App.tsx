@@ -16,6 +16,7 @@ import AboutPanel from './components/AboutPanel';
 import TokenTracker from './components/TokenTracker';
 import BackupPanel from './components/BackupPanel';
 import MemoryPanel from './components/MemoryPanel';
+import WeatherDashboard from './components/WeatherDashboard';
 import MyraLogo from './components/MyraLogo';
 import { useSettings } from './hooks/useSettings';
 import { useMultiAI, type MultiAICallbacks } from './hooks/useMultiAI';
@@ -53,6 +54,7 @@ export default function App() {
   const [showMemory, setShowMemory] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showTokens, setShowTokens] = useState(false);
+  const [showWeather, setShowWeather] = useState(false);
   const [orbState, setOrbState] = useState<OrbState>('idle');
   const [statusText, setStatusText] = useState('Tap karke bolo 💬');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -453,6 +455,7 @@ export default function App() {
         setShowSettings(false); setShowProviderSettings(false); setShowCustomize(false);
         setShowStats(false); setShowSessions(false); setShowAbout(false);
         setShowBackup(false); setShowMemory(false); setShowSearch(false); setShowTokens(false);
+        setShowWeather(false);
       }
     };
     window.addEventListener('keydown', handler);
@@ -556,6 +559,7 @@ export default function App() {
           <ActionChip icon="⚙️" label="Settings" color={theme.primary} onClick={() => setShowSettings(true)} />
           <ActionChip icon="📥" label="Backup" color={theme.primary} onClick={() => setShowBackup(true)} />
           <ActionChip icon="🪙" label="Tokens" color={theme.primary} onClick={() => setShowTokens(true)} />
+          <ActionChip icon="🌤️" label="Weather" color={theme.primary} onClick={() => setShowWeather(true)} />
           <ActionChip icon="ℹ️" label="About" color={theme.primary} onClick={() => setShowAbout(true)} />
           <LanguageToggle
             lang={settings.ttsLanguage}
@@ -645,6 +649,7 @@ export default function App() {
       <TokenTracker open={showTokens} accentColor={theme.primary} stats={tokenStats} onClose={() => setShowTokens(false)} onReset={() => setTokenStats({ requestCount: 0, totalTokens: 0, estimatedCost: 0, providerBreakdown: {} })} />
       <BackupPanel open={showBackup} accentColor={theme.primary} onClose={() => setShowBackup(false)} onImport={handleImport} />
       <MemoryPanel open={showMemory} memories={memories} accentColor={theme.primary} onRemove={removeMemory} onClear={clearMemories} onClose={() => setShowMemory(false)} />
+      <WeatherDashboard open={showWeather} accentColor={theme.primary} onClose={() => setShowWeather(false)} onSpeakWeather={txt => { addMessage(txt, false); setOrbState('speaking'); speakTTS(txt, () => setOrbState('idle')); }} lang={settings.ttsLanguage} />
       <ChatSearchFilter open={showSearch} messages={messages} accentColor={theme.primary} onSelect={() => setShowSearch(false)} onClose={() => setShowSearch(false)} />
 
       {/* Call Dialog */}

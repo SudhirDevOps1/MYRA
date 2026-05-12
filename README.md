@@ -38,9 +38,10 @@ MYRA is a production-ready **AI Voice Assistant** web app that connects to **13+
 - **Typing indicator** — Animated dots during thinking
 - **Copy messages** — Hover to copy any message
 
-### 📊 Analytics
+### 📊 Analytics & Dashboards
 - **Stats panel** — Messages, words, response times, mini chart
 - **Token/cost tracker** — Per-provider request count + estimated cost
+- **Weather Dashboard** — Fetch live weather data via OpenWeather API (temp, condition, wind, humidity) by city or village name. MYRA reads complete automated weather metrics aloud.
 
 ### 🧠 Memory
 - **Long-term memory** — MYRA remembers facts across sessions

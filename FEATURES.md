@@ -97,10 +97,12 @@
 | **Scrollbar Colors** | Themed scrollbar thumb | ✅ |
 | **Glow Effects** | Background radial glows per theme | ✅ |
 
-## 🔧 Utilities
+## 🔧 Utilities & Tools
 
 | Feature | Description | Status |
 |---------|-------------|--------|
+| **Weather Dashboard** | Standalone tool fetching real-time metric temperatures, humidity, wind data via custom OpenWeather API key. | ✅ |
+| **Spoken Forecasts** | MYRA constructs natural automated Hindi/English conversational weather forecasts on demand. | ✅ |
 | **Keyboard Shortcuts** | 8 shortcuts for navigation | ✅ |
 | **Offline Detection** | Red banner when internet lost | ✅ |
 | **Online/Offline Auto** | Reconnects when internet returns | ✅ |

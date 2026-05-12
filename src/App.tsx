@@ -19,6 +19,7 @@ import MemoryPanel from './components/MemoryPanel';
 import WeatherDashboard from './components/WeatherDashboard';
 import FunDashboard from './components/FunDashboard';
 import ToolsDashboard from './components/ToolsDashboard';
+import Calculator from './components/Calculator';
 import MyraLogo from './components/MyraLogo';
 import { useSettings } from './hooks/useSettings';
 import { useMultiAI, type MultiAICallbacks } from './hooks/useMultiAI';
@@ -59,6 +60,7 @@ export default function App() {
   const [showWeather, setShowWeather] = useState(false);
   const [showFun, setShowFun] = useState(false);
   const [showTools, setShowTools] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(false);
   const [orbState, setOrbState] = useState<OrbState>('idle');
   const [statusText, setStatusText] = useState('Tap karke bolo 💬');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -85,7 +87,7 @@ export default function App() {
   );
 
   // TTS — voiceId from gemini voice setting controls the acoustic profile
-  const { speak: speakTTS, cancel: cancelTTS, activeVoice, speakRaw } = useTTS(
+  const { speak: speakTTS, cancel: cancelTTS, activeVoice } = useTTS(
     settings.voicePrefs,
     settings.ttsLanguage,
     settings.geminiVoice || 'Aoede'
@@ -459,7 +461,7 @@ export default function App() {
         setShowSettings(false); setShowProviderSettings(false); setShowCustomize(false);
         setShowStats(false); setShowSessions(false); setShowAbout(false);
         setShowBackup(false); setShowMemory(false); setShowSearch(false); setShowTokens(false);
-        setShowWeather(false); setShowFun(false); setShowTools(false);
+        setShowWeather(false); setShowFun(false); setShowTools(false); setShowCalculator(false);
       }
     };
     window.addEventListener('keydown', handler);
@@ -522,7 +524,7 @@ export default function App() {
         </div>
       )}
 
-      <div className="w-full max-w-3xl mx-auto flex flex-col flex-1 min-h-screen">
+      <div className="w-full max-w-3xl mx-auto flex flex-col flex-1">
 
         {/* Top Bar */}
         <div className="relative z-20 flex items-center justify-between px-3 sm:px-5 pt-6 sm:pt-8 pb-2 gap-2">
@@ -532,10 +534,20 @@ export default function App() {
           </div>
           <div className="flex flex-col items-center">
             <div className="flex items-center gap-1.5 sm:gap-2">
-              <MyraLogo size={28} accent={theme.primary} />
-              <h1 className="text-xl sm:text-2xl font-black tracking-[0.25em] sm:tracking-[0.3em] leading-none" style={{ color: theme.primary }}>MYRA</h1>
+              <MyraLogo size={30} accent={theme.primary} />
+              <h1
+                className="text-xl sm:text-2xl font-black tracking-[0.25em] sm:tracking-[0.3em] leading-none"
+                style={{
+                  color: theme.primary,
+                  textShadow: `0 0 18px ${theme.primary}55`,
+                }}
+              >
+                MYRA
+              </h1>
             </div>
-            <span className="text-[#555] font-mono text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] mt-0.5">AI VOICE v2.5</span>
+            <span className="text-[#666] font-mono text-[9px] sm:text-[10px] tracking-[0.18em] sm:tracking-[0.22em] mt-1 uppercase">
+              AI · Voice · OS
+            </span>
           </div>
           <div className="flex flex-col items-end gap-0.5 min-w-0">
             <span className="font-mono text-[10px] sm:text-xs truncate" style={{ color: theme.primary }}>{timeStr}</span>
@@ -565,6 +577,7 @@ export default function App() {
           <ActionChip icon="🪙" label="Tokens" color={theme.primary} onClick={() => setShowTokens(true)} />
           <ActionChip icon="🌤️" label="Weather" color={theme.primary} onClick={() => setShowWeather(true)} />
           <ActionChip icon="🛠️" label="Tools" color={theme.primary} onClick={() => setShowTools(true)} />
+          <ActionChip icon="🧮" label="Calculator" color={theme.primary} onClick={() => setShowCalculator(true)} />
           <ActionChip icon="🎪" label="Fun Zone" color={theme.primary} onClick={() => setShowFun(true)} />
           <ActionChip icon="ℹ️" label="About" color={theme.primary} onClick={() => setShowAbout(true)} />
           <LanguageToggle
@@ -656,9 +669,10 @@ export default function App() {
       <BackupPanel open={showBackup} accentColor={theme.primary} onClose={() => setShowBackup(false)} onImport={handleImport} />
       <MemoryPanel open={showMemory} memories={memories} accentColor={theme.primary} onRemove={removeMemory} onClear={clearMemories} onClose={() => setShowMemory(false)} />
       <WeatherDashboard open={showWeather} accentColor={theme.primary} onClose={() => setShowWeather(false)} onSpeakWeather={txt => { addMessage(txt, false); setOrbState('speaking'); speakTTS(txt, () => setOrbState('idle')); }} lang={settings.ttsLanguage} />
-       <FunDashboard open={showFun} accentColor={theme.primary} onClose={() => setShowFun(false)} lang={settings.ttsLanguage} />
-       <ToolsDashboard open={showTools} accentColor={theme.primary} onClose={() => setShowTools(false)} lang={settings.ttsLanguage} />
-       <ChatSearchFilter open={showSearch} messages={messages} accentColor={theme.primary} onSelect={() => setShowSearch(false)} onClose={() => setShowSearch(false)} />
+      <FunDashboard open={showFun} accentColor={theme.primary} onClose={() => setShowFun(false)} lang={settings.ttsLanguage} />
+      <ToolsDashboard open={showTools} accentColor={theme.primary} onClose={() => setShowTools(false)} lang={settings.ttsLanguage} />
+      <Calculator open={showCalculator} accentColor={theme.primary} onClose={() => setShowCalculator(false)} lang={settings.ttsLanguage} />
+      <ChatSearchFilter open={showSearch} messages={messages} accentColor={theme.primary} onSelect={() => setShowSearch(false)} onClose={() => setShowSearch(false)} />
 
       {/* Call Dialog */}
       {showCallDialog && (
@@ -678,9 +692,109 @@ export default function App() {
       )}
 
       {/* Demo helper */}
-      <div className="fixed bottom-2 right-2 z-[60] opacity-30 hover:opacity-100">
-        <button onClick={() => (window as any).simulateIncomingCall?.('Priya')} className="text-[10px] text-[#555] bg-[#111] px-2 py-1 rounded">📞 Demo Call</button>
+      <div className="fixed bottom-12 right-2 z-[60] opacity-30 hover:opacity-100">
+        <button onClick={() => (window as any).simulateIncomingCall?.('Priya')} className="text-[10px] text-[#555] bg-[#111] px-2 py-1 rounded border border-[#222]">📞 Demo Call</button>
       </div>
+
+      {/* ===== Production-Level Footer ===== */}
+      <footer
+        className="relative z-20 w-full mt-auto py-5 sm:py-6 px-4 sm:px-6 border-t backdrop-blur-md"
+        style={{
+          borderColor: `${theme.primary}15`,
+          background: 'linear-gradient(180deg, rgba(5,5,5,0) 0%, rgba(8,8,8,0.95) 100%)',
+        }}
+      >
+        <div className="max-w-3xl mx-auto space-y-3">
+          {/* Top Row: Branding */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            {/* Built by Sudhir Singh */}
+            <a
+              href="https://github.com/SudhirDevOps1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-2.5 transition-all hover:scale-[1.02] active:scale-95"
+              title="View Sudhir Singh on GitHub"
+            >
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black shadow-lg transition-shadow group-hover:shadow-xl"
+                style={{
+                  background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+                  color: '#000',
+                  boxShadow: `0 4px 12px ${theme.primary}40`,
+                }}
+              >
+                SS
+              </div>
+              <div className="flex flex-col items-start">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-bold text-white group-hover:text-white transition-colors">
+                    Sudhir Singh
+                  </span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-[#666] group-hover:text-white transition-colors">
+                    <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                  </svg>
+                </div>
+                <div className="flex items-center gap-1.5 text-[10px] text-[#888]">
+                  <span className="font-mono">@SudhirDevOps1</span>
+                  <span className="opacity-50">·</span>
+                  <span className="text-[9px] uppercase tracking-wider">Lead Developer</span>
+                </div>
+              </div>
+            </a>
+
+            {/* Quick Social Links */}
+            <div className="flex items-center gap-2">
+              {[
+                { url: 'https://github.com/SudhirDevOps1', icon: 'GH', label: 'GitHub' },
+                { url: 'https://github.com/SudhirDevOps1?tab=repositories', icon: '📦', label: 'Repos' },
+                { url: '#', icon: '🌐', label: 'Web' },
+              ].map(link => (
+                <a
+                  key={link.label}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all hover:scale-110 active:scale-95"
+                  style={{ borderColor: `${theme.primary}33`, color: theme.primary, backgroundColor: '#0E0E0E' }}
+                  title={link.label}
+                >
+                  {link.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${theme.primary}33, transparent)` }} />
+
+          {/* Bottom Row: Meta */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] sm:text-[11px] text-[#666]">
+            <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+              <MyraLogo size={14} accent={theme.primary} />
+              <span className="font-bold tracking-wider" style={{ color: theme.primary }}>MYRA</span>
+              <span className="text-[#444]">v2.5.0</span>
+              <span className="text-[#333]">•</span>
+              <span className="font-mono">© {new Date().getFullYear()}</span>
+              <span className="text-[#333]">•</span>
+              <span className="text-[#888]">All rights reserved</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-mono text-[9px]"
+                style={{ backgroundColor: `${theme.primary}15`, color: theme.primary }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: theme.primary }} />
+                Production Ready
+              </span>
+              <span className="text-[#444]">•</span>
+              <span>Made in 🇮🇳</span>
+            </div>
+          </div>
+
+          {/* Tagline */}
+          <p className="text-center text-[10px] text-[#555] italic font-light pt-1">
+            "Your voice, your AI — anytime, anywhere."
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -744,10 +858,22 @@ function ConnectionBadge({ isConnected, connectionState, lastError, onReconnect,
 interface ChipProps { icon: string; label: string; badge?: number; color: string; onClick: () => void }
 function ActionChip({ icon, label, badge, color, onClick }: ChipProps) {
   return (
-    <button onClick={onClick} className="flex items-center gap-1.5 bg-[#0E0E0E] border rounded-full px-2.5 py-1.5 text-[10px] font-medium text-[#CCC] hover:text-white transition-all active:scale-95" style={{ borderColor: `${color}22` }}>
-      <span>{icon}</span>
-      <span>{label}</span>
-      {badge !== undefined && badge > 0 && <span className="text-[8px] px-1 py-0.5 rounded-full font-bold" style={{ backgroundColor: color, color: '#000' }}>{badge > 99 ? '99+' : badge}</span>}
+    <button
+      onClick={onClick}
+      className="flex items-center gap-1.5 bg-[#0E0E0E] border rounded-full px-3 py-1.5 text-[10px] font-medium text-[#CCC] hover:text-white hover:bg-[#1A1A1A] transition-all active:scale-95 flex-shrink-0 group"
+      style={{ borderColor: `${color}22` }}
+      title={label}
+    >
+      <span className="text-sm group-hover:scale-110 transition-transform">{icon}</span>
+      <span className="hidden xs:inline sm:inline">{label}</span>
+      {badge !== undefined && badge > 0 && (
+        <span
+          className="text-[8px] px-1.5 py-0.5 rounded-full font-bold leading-none"
+          style={{ backgroundColor: color, color: '#000', boxShadow: `0 0 8px ${color}66` }}
+        >
+          {badge > 99 ? '99+' : badge}
+        </span>
+      )}
     </button>
   );
 }

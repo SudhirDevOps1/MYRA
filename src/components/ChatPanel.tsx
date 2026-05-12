@@ -57,30 +57,37 @@ export default function ChatPanel({ messages, className = '', accentColor = '#FF
             />
           )}
           <div
-            className={`max-w-[78%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed relative ${
+            className={`max-w-[85%] sm:max-w-[78%] px-4 py-3 rounded-2xl text-xs sm:text-sm leading-relaxed relative shadow-sm ${
               msg.isUser
-                ? 'bg-[#1A0000] border text-[#EEEEEE] rounded-br-md'
-                : 'bg-[#111111] border border-[#222] text-[#DDDDDD] rounded-bl-md'
+                ? 'border text-[#EEEEEE] rounded-br-sm'
+                : 'bg-[#101010] border border-[#1C1C1C] text-[#DDDDDD] rounded-bl-sm'
             }`}
-            style={msg.isUser ? { borderColor: `${accentColor}55` } : undefined}
+            style={
+              msg.isUser
+                ? {
+                    backgroundColor: `${accentColor}11`,
+                    borderColor: `${accentColor}44`,
+                  }
+                : undefined
+            }
           >
             {msg.isUser ? (
-              <p className="whitespace-pre-wrap">{msg.text}</p>
+              <p className="whitespace-pre-wrap font-medium">{msg.text}</p>
             ) : (
               <MarkdownRenderer text={msg.text} accentColor={accentColor} />
             )}
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-[#555]">{formatTime(msg.timestamp)}</span>
+            <div className="flex items-center gap-2 mt-1.5 justify-end">
+              <span className="text-[9px] text-[#555] font-mono mr-auto">{formatTime(msg.timestamp)}</span>
               <button
                 onClick={() => copy(msg.text)}
-                className="text-[10px] text-[#555] hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                title="Copy"
+                className="text-[10px] text-[#777] hover:text-white active:scale-90 transition-all sm:opacity-0 sm:group-hover:opacity-100 px-1"
+                title="Copy message"
               >
                 📋
               </button>
               <button
                 onClick={() => read(msg.text)}
-                className="text-[10px] text-[#555] hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-[10px] text-[#777] hover:text-white active:scale-90 transition-all sm:opacity-0 sm:group-hover:opacity-100 px-1"
                 title="Read aloud"
               >
                 🔊

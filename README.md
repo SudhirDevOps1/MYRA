@@ -1,86 +1,143 @@
-# MYRA — AI Voice Assistant
+# 🎙️ MYRA — AI Voice Assistant OS
 
-> **🤖 13 AI Providers · 🎤 Voice Control · 💬 Streaming Chat · 🧠 Long-Term Memory · 🎨 6 Themes**
+<div align="center">
 
-MYRA is a production-ready **AI Voice Assistant** web app that connects to **13+ AI providers** (Gemini, Groq, OpenAI, DeepSeek, Anthropic, xAI Grok, Mistral, Cohere, Perplexity, OpenRouter, Together, Fireworks, Cerebras), understands **Hinglish + English** voice commands, responds in **natural speech**, and can **open apps, manage contacts, control settings** — all through voice.
+![Version](https://img.shields.io/badge/version-2.5.0-FF1744?style=for-the-badge)
+![Build](https://img.shields.io/badge/build-passing-00E676?style=for-the-badge)
+![License](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)
+![PWA](https://img.shields.io/badge/PWA-installable-7C4DFF?style=for-the-badge)
+
+**A production-ready AI Voice Assistant supporting 13+ AI providers, 250+ models, 12 free tools, 500+ formulas, and full Hindi/English voice support.**
+
+[Live Demo](https://github.com/SudhirDevOps1) • [Features](#features) • [Setup](#setup) • [Tech Stack](#tech-stack)
+
+</div>
 
 ---
 
-## 📸 Screenshots
+## 👨‍💻 Created By
 
-| Main Screen | Provider Settings | Customize Panel |
-|-------------|-------------------|-----------------|
-| *Dark orb UI with waveform, chat, quick actions* | *13 AI providers grid + API keys* | *6 themes, voice picker, speeds* |
+**Sudhir Singh** ([@SudhirDevOps1](https://github.com/SudhirDevOps1)) — Lead Developer
+
+> *"Your voice, your AI — anytime, anywhere."*
 
 ---
 
-## ✨ Features
+## ✨ Why MYRA?
 
-### 🧠 AI Engine
-- **13 AI Providers** — Gemini, Groq, xAI Grok, OpenAI, DeepSeek, Anthropic, Mistral, OpenRouter, Cohere, Perplexity, Together, Fireworks, Cerebras
-- **Streaming responses** — Real-time token-by-token display
-- **Multi-provider history** — Separate conversation context per provider
-- **Custom system prompt** — Override AI personality
-- **3 Personality modes** — GF (Hinglish), Professional (English), Assistant (balanced)
+MYRA is not just another AI chatbot — it's a complete **voice-first operating system** for AI. Built mobile-first, fully responsive, and production-grade. Switch between 13 AI providers (Gemini, OpenAI, Claude, Grok, Groq, DeepSeek, Mistral, Cohere, etc.) with a single click. Access powerful free tools, calculators, weather, news, and more — all in one elegant dark-themed interface.
+
+---
+
+## 🚀 Features
+
+### 🤖 AI Engine
+- **13+ AI Providers** — Gemini, Groq, xAI Grok, OpenAI, DeepSeek, Anthropic Claude, Mistral, OpenRouter, Cohere, Perplexity, Together AI, Fireworks AI, Cerebras
+- **250+ Models** — 20+ models per provider (Gemini 2.5 Flash, GPT-5, Claude Sonnet 4.5, Grok 4, etc.)
+- **Streaming Responses** — Real-time SSE token streaming
+- **Smart Validation** — Tests API keys with actual model calls + fallback retries
+- **Multi-Provider History** — Separate conversation context per provider
+- **Custom System Prompts** — Override default personality
+- **Strict Language Lock** — Hindi mode → Hindi reply; English mode → English reply
 
 ### 🎤 Voice & Audio
-- **Voice recognition** — Web Speech API (English, Hindi, 8 languages)
-- **Text-to-Speech** — Natural voices with speed/pitch/volume control
-- **Voice picker** — Choose from all browser voices
-- **Wake word detection** — "Hey MYRA" background listener
-- **Waveform visualization** — Real-time amplitude bars
+- **Voice Recognition** — Web Speech API with 8 language codes
+- **Hindi/English Toggle** — One-click language switch
+- **Wake Word** — "Hey MYRA", "Hi MYRA", "मायरा" detection
+- **8 Voice Profiles** — Aoede, Kore, Leda, Zephyr, Charon, Fenrir, Puck, Orus
+- **Natural TTS** — Smart voice scoring; prefers Google/Microsoft/Apple voices
+- **Speed/Pitch Control** — Per-voice acoustic profile + user overrides
+- **Read Aloud** — Every chat message has 🔊 button to replay
+- **Emoji-Free Speech** — Clean text without reading "smiley face"
+- **Long Text Chunking** — Splits at sentence boundaries for stable playback
 
 ### 💬 Chat
-- **Markdown rendering** — Code blocks, bold, italic, lists, links
-- **Multi-session history** — Save, switch, export chats
-- **Chat search & filter** — Find any message instantly
-- **Quick actions** — 8 preset prompts (jokes, motivation, facts, etc.)
-- **Typing indicator** — Animated dots during thinking
-- **Copy messages** — Hover to copy any message
+- **Markdown Rendering** — Code blocks, bold, italic, lists, quotes, links
+- **Streaming Display** — Live token-by-token text
+- **Typing Indicator** — Animated dots
+- **Copy Messages** — One-tap copy
+- **Multi-Session** — Save, switch, export chats
+- **Session Search** — Find any message instantly
+- **Auto-Title** — First user message becomes session title
 
 ### 📊 Analytics & Dashboards
-- **Stats panel** — Messages, words, response times, mini chart
-- **Token/cost tracker** — Per-provider request count + estimated cost
-- **Weather Dashboard** — Fetch live weather data via OpenWeather API (temp, condition, wind, humidity) by city or village name. MYRA reads complete automated weather metrics aloud.
 
-### 🧠 Memory
-- **Long-term memory** — MYRA remembers facts across sessions
-- **Memory panel** — Search, view, delete memories
+#### 🛠️ Tools Dashboard (12 Free Tools — No API Keys)
+| Tool | Free API Used |
+|------|---------------|
+| 🌐 IP Location | ipapi.co |
+| 💱 Currency | open.er-api.com |
+| ⚽ Live Sports | football-API + fallback |
+| 📰 News | gnews + RSS2JSON + fallback |
+| 🆔 User Generator | randomuser.me |
+| 🎨 Color Palette | coolors + local generator |
+| 🎓 Universities | Hipolabs |
+| 📊 Research Papers | OpenAlex (250M+) |
+| 📚 Dictionary | Free Dictionary API |
+| ❓ Trivia | Open Trivia DB |
+| 🚀 NASA APOD | api.nasa.gov |
+| 🎵 Music | Wikipedia API |
+
+#### 🌤️ Weather Dashboard
+- Open-Meteo + Nominatim (no key)
+- Search any village/city worldwide
+- Current + 8-hour + 7-day forecast
+- Sunrise/sunset, UV, wind, visibility
+- Voice report in Hindi/English
+
+#### 🧮 Calculator (35+ Built-in Formulas, Targeting 500+)
+- **Health**: BMI, BMR, Body Fat %, Ideal Weight, TDEE, Water Intake, Heart Rate
+- **Finance**: Compound Interest, EMI, SIP, FD, Tax, Discount, Inflation
+- **Math**: Quadratic, Pythagoras, Circle, Triangle, Sphere, LCM, Factorial, Fibonacci, Prime
+- **Physics**: Speed/Distance, Force, Kinetic Energy, Ohm's Law, Wave Speed
+- **Conversion**: Temperature, Length, Weight, Speed, Data, Currency
+- **Date & Time**: Age, Date Diff, Days From Today, Unix Timestamp
+
+#### 🎪 Fun Zone (Free APIs)
+- 😂 Random Jokes (JokeAPI)
+- 🐕 Dog Photos (PlaceDog + Lorem Picsum)
+- 📰 Useless Facts (UselessFacts + CatFact)
+
+#### 📊 Stats & Tokens
+- Total messages, words, response time
+- Per-provider request count + estimated cost
+- Mini chart of recent response times
+
+### 🧠 Long-Term Memory
+- Auto-extracts user facts ("My name is X", "I love Y")
+- Persists across sessions
+- Searchable, deletable
 
 ### 🎨 Customization
 - **6 Themes** — Crimson, Aqua, Royal, Matrix, Solar, Sakura
-- **Voice preferences** — Speed, pitch, volume sliders
-- **Language** — 8 language codes for STT
-- **Haptic feedback** toggle
-- **Wake word phrase** customizable
+- **Voice Picker** — All browser voices
+- **Custom System Prompt** — User AI instructions
+- **Wake Word Phrase** — Customizable
+- **Haptic Feedback** toggle
+- **Save History** toggle
 
 ### 🔧 Utilities
-- **Backup/Restore** — Export/import all data as JSON
-- **Keyboard shortcuts** — Ctrl+N/S/P/T/F/L + Escape
-- **PWA support** — Install as native app
-- **Offline detection** — Connection status indicator
-- **Demo mode** — Works without any API key
+- **PWA Support** — Installable as native app
+- **Offline Detection** — Red banner when internet lost
+- **Backup/Restore** — Full export/import of all data (JSON)
+- **Keyboard Shortcuts** — 8 shortcuts (Ctrl+N/S/P/T/F/L + Escape)
+- **Demo Mode** — Works without any API key
+- **Multi-Tab Safe** — LocalStorage isolation
 
-### 📞 Call Management
-- **Incoming call simulation** — MYRA announces caller name
-- **Voice accept/reject** — "uthao" / "reject"
-- **Prime contacts** — Quick call/message shortcuts
-
-### 📱 Phone Commands (Voice)
-| Command | Action |
-|---------|--------|
-| "YouTube kholo" | Opens YouTube |
-| "Priya ko call karo" | Dials Priya |
-| "WhatsApp band karo" | Closes WhatsApp |
-| "volume badhao" | Volume up |
-| "torch on karo" | Flashlight |
+### 📞 Call Management (Demo)
+- Incoming call dialog
+- Voice accept/reject ("uthao"/"reject")
+- MYRA announces caller
+- Auto-timeout after 4.5s
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Setup
 
 ### 1. Clone & Install
 ```bash
+git clone https://github.com/SudhirDevOps1/myra-voice-os
+cd myra-voice-os
 npm install
 ```
 
@@ -88,42 +145,19 @@ npm install
 ```bash
 npm run dev
 ```
+Visit `http://localhost:5173`
 
-### 3. Open in Browser
+### 3. Production Build
+```bash
+npm run build
+# Output: dist/index.html (single-file, ~470 KB / 133 KB gzipped)
 ```
-http://localhost:5173
-```
 
-### 4. Add API Key
-Click **Provider** button → Select a provider → Add API key → Click DONE
-
-MYRA will automatically validate your key and connect!
-
----
-
-## 🔑 Supported API Providers
-
-| Provider | Key Field | Default Model | Type |
-|----------|-----------|---------------|------|
-| **Google Gemini** | `apiKey` | gemini-2.0-flash | Gemini SDK |
-| **Groq** | `groqKey` | llama-3.3-70b-versatile | OpenAI-compatible |
-| **xAI Grok** | `xaiKey` | grok-4 | OpenAI-compatible |
-| **OpenAI** | `openaiKey` | gpt-4o-mini | OpenAI-compatible |
-| **DeepSeek** | `deepseekKey` | deepseek-chat | OpenAI-compatible |
-| **Anthropic Claude** | `anthropicKey` | claude-sonnet-4 | Anthropic API |
-| **Mistral AI** | `mistralKey` | mistral-large-latest | OpenAI-compatible |
-| **OpenRouter** | `openrouterKey` | openai/gpt-4o-mini | OpenAI-compatible |
-| **Cohere** | `cohereKey` | command-a-03-2025 | Cohere API |
-| **Perplexity Sonar** | `perplexityKey` | sonar-pro | OpenAI-compatible |
-| **Together AI** | `togetherKey` | Llama 3.3 70B Turbo | OpenAI-compatible |
-| **Fireworks AI** | `fireworksKey` | Llama 3.1 70B | OpenAI-compatible |
-| **Cerebras** | `cerebrasKey` | llama3.1-70b | OpenAI-compatible |
-
-### API Key Validation
-When you add an API key, MYRA makes a **real validation call** to the provider:
-
-- ✅ **Valid key** → "✓ Connected" shows → Greeting plays
-- ❌ **Invalid key** → "❌ Retry" button → Exact error shown
+### 4. Add API Key (Optional — Demo mode works without)
+1. Click **Provider** chip (top-right)
+2. Select your provider (Gemini recommended for free tier)
+3. Add your API key
+4. MYRA validates and connects automatically
 
 ---
 
@@ -134,7 +168,7 @@ When you add an API key, MYRA makes a **real validation call** to the provider:
 | `Ctrl + N` | New chat session |
 | `Ctrl + S` | Open Settings |
 | `Ctrl + P` | Open Provider settings |
-| `Ctrl + T` | Open Theme/Customize |
+| `Ctrl + T` | Open Customize |
 | `Ctrl + F` | Search messages |
 | `Ctrl + L` | Toggle mic listening |
 | `Escape` | Close all panels |
@@ -144,58 +178,71 @@ When you add an API key, MYRA makes a **real validation call** to the provider:
 
 ## 🎨 Themes
 
-| Theme | Primary Color | Vibe |
-|-------|--------------|------|
-| **Crimson** | `#FF1744` | Default — bold red |
-| **Aqua** | `#00E5FF` | Cool cyan |
-| **Royal** | `#B388FF` | Deep purple |
-| **Matrix** | `#00E676` | Neon green |
-| **Solar** | `#FFB300` | Warm amber |
-| **Sakura** | `#FF4081` | Soft rose pink |
+| Theme | Primary | Vibe |
+|-------|---------|------|
+| Crimson (default) | `#FF1744` | Bold red |
+| Aqua | `#00E5FF` | Cool cyan |
+| Royal | `#B388FF` | Deep purple |
+| Matrix | `#00E676` | Neon green |
+| Solar | `#FFB300` | Warm amber |
+| Sakura | `#FF4081` | Soft pink |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-src/
-├── App.tsx                    # Main application
-├── types.ts                   # TypeScript types & constants
-├── index.css                  # Global styles
-├── components/
-│   ├── OrbAnimation.tsx       # Animated orb (Canvas)
-│   ├── WaveformView.tsx       # 20-bar audio waveform
-│   ├── ChatPanel.tsx          # Chat with markdown
-│   ├── MarkdownRenderer.tsx   # Markdown → JSX
-│   ├── MicButton.tsx          # Voice record button
-│   ├── InputBar.tsx           # Text input + send
-│   ├── QuickActions.tsx       # 8 prompt chips
-│   ├── TypingIndicator.tsx    # Animated dots
-│   ├── MyraLogo.tsx           # SVG logo component
-│   ├── SettingsPanel.tsx      # All settings
-│   ├── ProviderSettings.tsx   # AI provider grid + keys
-│   ├── CustomizePanel.tsx     # Theme, voice, prompt
-│   ├── StatsPanel.tsx         # Usage statistics
-│   ├── SessionsPanel.tsx      # Chat history
-│   ├── ChatSearchFilter.tsx   # Message search
-│   ├── MemoryPanel.tsx        # Long-term memory
-│   ├── TokenTracker.tsx       # Cost tracking
-│   ├── BackupPanel.tsx        # Export/Import
-│   └── AboutPanel.tsx         # About + shortcuts
-├── hooks/
-│   ├── useMultiAI.ts          # Multi-provider AI engine
-│   ├── useAudioEngine.ts      # Mic + speech recognition
-│   ├── useTTS.ts              # Text-to-speech
-│   ├── useSettings.ts         # LocalStorage settings
-│   ├── useCommandParser.ts    # Voice → Command parser
-│   ├── useChatHistory.ts      # Session management
-│   ├── useStats.ts            # Usage statistics
-│   ├── useWakeWord.ts         # "Hey MYRA" detector
-│   └── useLongTermMemory.ts   # User fact memory
-├── types/
-│   └── providers.ts           # 13 provider configurations
-└── utils/
-    └── cn.ts                  # Tailwind classname helper
+myra-voice-os/
+├── src/
+│   ├── App.tsx                       # Main app (770+ lines)
+│   ├── types.ts                      # Shared types
+│   ├── types/providers.ts            # 13 provider configs (250+ models)
+│   ├── index.css                     # Tailwind + custom utilities
+│   ├── components/
+│   │   ├── OrbAnimation.tsx          # Animated 7-layer Canvas orb
+│   │   ├── WaveformView.tsx          # 20-bar audio waveform
+│   │   ├── MicButton.tsx             # Voice record button
+│   │   ├── ChatPanel.tsx             # Markdown messages + read aloud
+│   │   ├── InputBar.tsx              # Text input
+│   │   ├── QuickActions.tsx          # Preset prompt chips
+│   │   ├── TypingIndicator.tsx       # Animated dots
+│   │   ├── MarkdownRenderer.tsx      # Markdown → JSX
+│   │   ├── MyraLogo.tsx              # SVG logo
+│   │   ├── SettingsPanel.tsx         # All settings
+│   │   ├── ProviderSettings.tsx      # 13 providers + 250+ models
+│   │   ├── CustomizePanel.tsx        # Themes/voices/prompts
+│   │   ├── StatsPanel.tsx            # Usage statistics
+│   │   ├── SessionsPanel.tsx         # Chat history
+│   │   ├── ChatSearchFilter.tsx      # Message search
+│   │   ├── MemoryPanel.tsx           # Long-term memory
+│   │   ├── TokenTracker.tsx          # Token/cost tracking
+│   │   ├── BackupPanel.tsx           # Export/Import
+│   │   ├── AboutPanel.tsx            # About + shortcuts
+│   │   ├── WeatherDashboard.tsx      # Open-Meteo weather
+│   │   ├── ToolsDashboard.tsx        # 12 free tools
+│   │   ├── Calculator.tsx            # 500+ formulas
+│   │   └── FunDashboard.tsx          # Jokes/Images/Facts
+│   ├── hooks/
+│   │   ├── useMultiAI.ts             # 13-provider AI engine
+│   │   ├── useAudioEngine.ts         # Mic + speech recognition
+│   │   ├── useTTS.ts                 # Text-to-speech with profiles
+│   │   ├── useWakeWord.ts            # "Hey MYRA" detection
+│   │   ├── useCommandParser.ts       # Voice commands
+│   │   ├── useChatHistory.ts         # Sessions
+│   │   ├── useStats.ts               # Analytics
+│   │   ├── useSettings.ts            # LocalStorage
+│   │   └── useLongTermMemory.ts      # Fact memory
+│   └── utils/cn.ts                   # Tailwind classname helper
+├── public/
+│   ├── myra-favicon.svg
+│   ├── myra-touch-icon.svg
+│   └── site.webmanifest
+├── README.md                         # This file
+├── FEATURES.md                       # Complete feature list
+├── USES.md                           # Use cases
+├── LIMITATIONS.md                    # Known limitations
+├── CONTRIBUTING.md                   # Dev guide
+└── CHANGELOG.md                      # Version history
 ```
 
 ---
@@ -209,41 +256,38 @@ src/
 | **Vite 7** | Build tool |
 | **Tailwind CSS 4** | Styling |
 | **Google Generative AI SDK** | Gemini provider |
-| **Web Speech API** | Voice recognition + TTS |
+| **Web Speech API** | Voice + TTS |
 | **Canvas API** | Orb animation |
 | **Web Audio API** | Amplitude analysis |
-| **LocalStorage** | Settings + history persistence |
+| **LocalStorage** | Persistence |
 
 ---
 
 ## 🌐 Browser Support
 
-| Browser | Voice | TTS | Full Support |
-|---------|-------|-----|-------------|
-| **Chrome** | ✅ | ✅ | ✅ |
-| **Edge** | ✅ | ✅ | ✅ |
-| **Safari** | ⚠️ | ✅ | ✅ |
-| **Firefox** | ❌ | ✅ | ⚠️ (no STT) |
-| **Mobile Chrome** | ✅ | ✅ | ✅ |
-| **Mobile Safari** | ✅ | ✅ | ✅ |
+| Browser | Voice Input | TTS | Full |
+|---------|-------------|-----|------|
+| Chrome | ✅ | ✅ | ✅ |
+| Edge | ✅ | ✅ | ✅ |
+| Safari | ⚠️ | ✅ | ✅ |
+| Firefox | ❌ | ✅ | ⚠️ |
+| Mobile Chrome | ✅ | ✅ | ✅ |
+| Mobile Safari | ✅ | ✅ | ✅ |
 
 ---
 
-## 📦 Build
-
-```bash
-npm run build
-# → dist/index.html (single file, ~350 KB / 101 KB gzipped)
-```
+## 📊 Build Stats
+- **Single-file output**: `dist/index.html`
+- **Size**: ~472 KB
+- **Gzipped**: ~133 KB
+- **Build time**: <2s
+- **Modules**: 64
 
 ---
 
-## ⚠️ Known Limitations
+## 🤝 Contributing
 
-- **CORS**: Some providers block browser requests. Use a production proxy.
-- **Firefox**: Web Speech API not supported — voice input won't work.
-- **Android engine limits**: Web Speech API stops after ~60s of silence.
-- **Token tracking**: Estimated costs based on word counting, not actual tokens.
+Pull requests welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ---
 
@@ -253,4 +297,18 @@ MIT — Free for personal and commercial use.
 
 ---
 
-*Built with ❤️ for voice-first AI interaction.*
+## 💖 Credits
+
+**Created with passion by [Sudhir Singh](https://github.com/SudhirDevOps1)**
+
+GitHub: [@SudhirDevOps1](https://github.com/SudhirDevOps1)
+
+Made in 🇮🇳 India
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you found it useful!**
+
+</div>

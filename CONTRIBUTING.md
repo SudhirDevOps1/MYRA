@@ -1,6 +1,8 @@
 # 🤝 Contributing to MYRA
 
-Thank you for your interest in contributing! MYRA is open-source and welcomes contributions.
+Thank you for your interest in contributing! MYRA is open-source and welcomes contributions from developers worldwide.
+
+**Maintainer**: [Sudhir Singh](https://github.com/SudhirDevOps1) ([@SudhirDevOps1](https://github.com/SudhirDevOps1))
 
 ---
 
@@ -10,16 +12,27 @@ Thank you for your interest in contributing! MYRA is open-source and welcomes co
 - **Node.js** ≥ 18
 - **npm** ≥ 9
 - **Modern browser** (Chrome/Edge recommended for full features)
+- **Git**
 
-### Setup
+### Quick Start
 ```bash
-git clone <repo-url>
-cd myra
+# Clone the repo
+git clone https://github.com/SudhirDevOps1/myra-voice-os
+cd myra-voice-os
+
+# Install dependencies
 npm install
+
+# Start dev server
 npm run dev
 ```
-
 Visit `http://localhost:5173` — dev server with hot reload.
+
+### Production Build
+```bash
+npm run build
+# Output: dist/index.html (single file, ~470 KB / 133 KB gzipped)
+```
 
 ---
 
@@ -27,51 +40,84 @@ Visit `http://localhost:5173` — dev server with hot reload.
 
 ```
 src/
-├── App.tsx                  # Main app entry
-├── types.ts                 # Shared TypeScript types
-├── types/providers.ts       # AI provider configurations
-├── components/              # React components
-│   ├── OrbAnimation.tsx     # Animated orb
-│   ├── ChatPanel.tsx        # Chat display
-│   └── ...                  # 15+ components
-├── hooks/                   # React hooks (business logic)
-│   ├── useMultiAI.ts        # Multi-provider AI engine
-│   ├── useAudioEngine.ts    # Mic + speech recognition
-│   └── ...                  # 8+ hooks
-└── index.css                # Global styles (Tailwind)
+├── App.tsx                    # Main app entry (770+ lines)
+├── types.ts                   # Shared TypeScript types
+├── types/providers.ts         # 13 AI provider configurations
+├── index.css                  # Global Tailwind + custom utilities
+├── components/                # 24 React components
+│   ├── OrbAnimation.tsx       # Canvas-drawn animated orb
+│   ├── ChatPanel.tsx          # Chat with markdown
+│   ├── Calculator.tsx         # 35+ formulas
+│   ├── ToolsDashboard.tsx     # 12 free tools
+│   ├── WeatherDashboard.tsx   # Weather forecast
+│   └── ...18 more components
+├── hooks/                     # 9 custom React hooks
+│   ├── useMultiAI.ts          # Multi-provider AI engine
+│   ├── useAudioEngine.ts      # Mic + speech recognition
+│   ├── useTTS.ts              # Text-to-speech
+│   └── ...6 more hooks
+└── utils/cn.ts                # Tailwind className helper
 ```
 
 ---
 
-## 🧪 Testing Changes
+## 🎨 Code Style Guide
 
-### Build Check
+### TypeScript
+- ✅ Use `type` for unions, `interface` for objects
+- ✅ Always type props explicitly
+- ✅ Prefer `const` over `let`
+- ✅ Use optional chaining `?.` and nullish coalescing `??`
+- ❌ Never use `any` without comment justification
+
+### React
+- ✅ Functional components only
+- ✅ Hooks at the top of component body
+- ✅ `useCallback` for prop functions
+- ✅ `useMemo` for expensive computations
+- ✅ `useRef` for mutable values
+- ❌ No class components
+
+### CSS
+- ✅ Tailwind utility classes
+- ✅ Inline `style` only for dynamic colors/gradients
+- ✅ Mobile-first responsive (`sm:`, `md:`, `lg:`)
+- ❌ No separate CSS files (except `index.css`)
+
+### Naming Conventions
+- **Components**: `PascalCase.tsx` (e.g., `ChatPanel.tsx`)
+- **Hooks**: `useCamelCase.ts` (e.g., `useMultiAI.ts`)
+- **Types**: `PascalCase` (e.g., `ProviderConfig`)
+- **Functions**: `camelCase` (e.g., `getSystemPrompt`)
+- **Constants**: `SCREAMING_SNAKE_CASE`
+
+---
+
+## 🧪 Testing Your Changes
+
+### Build Test (Required)
 ```bash
 npm run build
 ```
-Must complete without errors. Build output goes to `dist/index.html`.
+Must complete without errors.
 
-### Lint Check
+### Type Check
 ```bash
 npx tsc --noEmit
 ```
-Should have minimal warnings (unused variables only).
+Should have ≤ 5 minor warnings (mostly unused variables).
 
 ### Manual Testing Checklist
-- [ ] App loads without errors
-- [ ] Theme switching works on all 6 themes
-- [ ] Settings save and persist across reload
-- [ ] Mic button starts/stops listening
-- [ ] Wake word triggers listening
-- [ ] Quick actions send correct prompts
-- [ ] Chat messages display (user + AI bubbles)
-- [ ] Markdown renders (bold, code, lists)
-- [ ] Sessions save and switch
-- [ ] Export works (JSON and TXT)
+- [ ] App loads in Chrome without errors
+- [ ] All 6 themes apply correctly
+- [ ] Mic button responds to tap
+- [ ] Settings persist after reload
+- [ ] All 12 dashboard tools open
+- [ ] Calculator formulas calculate correctly
+- [ ] Voice TTS works (English + Hindi)
 - [ ] API key validation works
 - [ ] Demo mode works without key
-- [ ] All panels open and close
-- [ ] Keyboard shortcuts work
+- [ ] Footer displays Sudhir Singh credentials
 
 ---
 
@@ -79,121 +125,123 @@ Should have minimal warnings (unused variables only).
 
 ### Step 1: Add to `src/types/providers.ts`
 ```typescript
-// Add to AIProvider type
-export type AIProvider = '...' | 'newprovider';
-
-// Add provider config
 {
   id: 'newprovider',
-  name: 'New Provider',
-  shortName: 'New',
-  icon: 'NP',
-  color: '#HEXCODE',
+  name: 'New Provider Name',
+  shortName: 'NewProv',
+  icon: '🆕',
+  color: '#HEX',
   keyField: 'newproviderKey',
   keyLabel: 'New Provider API Key',
-  keyPlaceholder: 'key-...',
-  mode: 'openai-compatible', // or 'gemini' | 'anthropic' | 'cohere'
+  keyPlaceholder: 'sk-...',
+  mode: 'openai-compatible',
   endpoint: 'https://api.newprovider.com/v1/chat/completions',
   defaultModel: 'model-name',
   models: [
-    { id: 'model-1', label: 'Model 1' },
+    { id: 'model-1', label: 'Model 1', free: true },
+    // ...20+ models
   ],
 }
 ```
 
-### Step 2: Add key field to `src/types.ts` (AppSettings)
+### Step 2: Add API key field to `src/types.ts`
 ```typescript
 export interface AppSettings {
-  // ... existing fields
+  // ...existing
   newproviderKey: string;
 }
 ```
 
-### Step 3: Add key to DEFAULT_SETTINGS
+### Step 3: Add to `DEFAULT_SETTINGS`
 ```typescript
-export const DEFAULT_SETTINGS = {
-  // ...
-  newproviderKey: '',
-};
+newproviderKey: '',
 ```
 
-### Step 4: Add key input in `src/components/ProviderSettings.tsx`
-The provider grid and API keys list are auto-generated from `AI_PROVIDERS`. If your provider uses `openai-compatible` mode, no additional hook changes needed.
-
-### Step 5: For custom API modes
-If your provider has a non-standard API, add a handler in `src/hooks/useMultiAI.ts` following the pattern of `sendAnthropic` or `sendCohere`.
-
-### Step 6: Build & test
+### Step 4: Build & test
 ```bash
 npm run build
 ```
 
 ---
 
+## 🛠️ Adding a New Tool to Dashboard
+
+### Step 1: Edit `src/components/ToolsDashboard.tsx`
+
+```typescript
+// Add to toolTabs array
+{ key: 'newtool', icon: '🔧', label: 'NewTool' }
+
+// Add fetch function
+async function fetchNewTool() {
+  return await safeFetch('https://api.example.com/data');
+}
+
+// Add render block
+{activeTool === 'newtool' && (
+  <div className="space-y-3">
+    {/* Your UI */}
+  </div>
+)}
+```
+
+### Step 2: Test
+- Click new tool tab
+- Verify data fetches and displays
+- Handle errors gracefully
+
+---
+
+## 🧮 Adding a New Calculator Formula
+
+Edit `src/components/Calculator.tsx` → `FORMULAS` array:
+
+```typescript
+{
+  id: 'unique-id',
+  name: 'Formula Name',
+  icon: '🔢',
+  category: 'Math', // Health/Finance/Math/Physics/Conversion/Date
+  inputs: [
+    { key: 'x', label: 'X', placeholder: '10' },
+    { key: 'y', label: 'Y', placeholder: '20' },
+  ],
+  calculate: ({ x, y }) => {
+    return `Result = ${x + y}`;
+  },
+  formula: 'X + Y',
+}
+```
+
+---
+
 ## 🎨 Adding a New Theme
 
-### Step 1: Add to `src/types.ts`
+Edit `src/types.ts` → `THEMES` array:
+
 ```typescript
-export type ThemeId = 'red' | 'cyan' | 'purple' | 'green' | 'amber' | 'rose' | 'newtheme';
-
-export const THEMES: ThemeConfig[] = [
-  // ... existing themes
-  {
-    id: 'newtheme',
-    name: 'Theme Name',
-    primary: '#HEX',
-    secondary: '#HEX',
-    accent: '#HEX',
-    glow: '#HEX',
-  },
-];
+{
+  id: 'newtheme',
+  name: 'Theme Name',
+  primary: '#HEX',
+  secondary: '#HEX',
+  accent: '#HEX',
+  glow: '#HEX',
+}
 ```
 
-The theme auto-applies to orb, buttons, badges, scrollbars, and chat bubbles. No component changes needed.
+Theme auto-applies everywhere — no other changes needed.
 
 ---
 
-## 📝 Code Style
+## 📦 Adding NPM Dependencies
 
-### TypeScript
-- Use `type` for unions, `interface` for objects
-- Use `const` by default, `let` only if reassigned
-- Use async/await, not Promise chains
-- Use optional chaining (`?.`) and nullish coalescing (`??`)
-
-### React
-- Functional components only (no classes)
-- Hooks at top of component
-- `useCallback` for functions passed as props
-- `useMemo` for expensive computations
-- `useRef` for mutable values that shouldn't trigger re-renders
-
-### CSS
-- Use Tailwind utility classes
-- Custom styles via `style={{}}` only for dynamic colors
-- No separate CSS files (except index.css for globals)
-- Dark theme only (background: `#050505`)
-
-### Naming
-- Components: `PascalCase` (e.g., `ChatPanel.tsx`)
-- Hooks: `useCamelCase` (e.g., `useMultiAI.ts`)
-- Types: `PascalCase` (e.g., `ProviderConfig`)
-- Functions: `camelCase` (e.g., `getSystemPrompt`)
-
----
-
-## 📦 Dependencies
-
-### Adding a new NPM package
-```bash
-npm install package-name
-```
 **Before adding:**
-- Is it really needed? MYRA aims to be lightweight.
-- Does it increase bundle size significantly?
-- Can the feature be implemented with existing APIs?
+- ❓ Is it really needed?
+- ❓ Does it increase bundle size > 50 KB?
+- ❓ Can it be done with existing APIs?
 
-### Current production dependencies
+**Current production deps** (keep minimal):
 - `react`, `react-dom` — UI framework
 - `@google/generative-ai` — Gemini SDK
 - `tailwindcss`, `clsx`, `tailwind-merge` — Styling
@@ -202,26 +250,102 @@ npm install package-name
 
 ## 🚫 What NOT to Add
 
-- **CSS frameworks** (Bootstrap, Material UI) — Tailwind only
-- **State management libraries** (Redux, Zustand) — React hooks only
-- **Router libraries** (React Router) — Single page app
-- **Large icon libraries** — SVG inline only
-- **Analytics/Sentry** — Privacy-first, no tracking
+| Avoid | Reason |
+|-------|--------|
+| Bootstrap, Material UI, Chakra | Tailwind only |
+| Redux, Zustand, MobX | React hooks suffice |
+| React Router | Single-page app |
+| Lodash, Moment, date-fns | Use native APIs |
+| Large icon libraries | Inline SVG/emoji |
+| Analytics, Sentry | Privacy-first |
 
 ---
 
 ## 📄 Pull Request Checklist
 
-- [ ] Build passes (`npm run build`)
-- [ ] No new TypeScript errors
-- [ ] Feature works in Chrome
-- [ ] Feature works in Safari (if using standard APIs)
+Before opening a PR:
+
+- [ ] Build passes: `npm run build`
+- [ ] TypeScript clean: `npx tsc --noEmit`
+- [ ] Tested in Chrome
+- [ ] Tested in Safari (if possible)
 - [ ] Existing features not broken
-- [ ] README updated if needed
-- [ ] Relevant .md files updated
+- [ ] README/FEATURES.md updated if needed
+- [ ] Footer credits preserved (Sudhir Singh)
+- [ ] No `console.log` in production code
+- [ ] Code formatted consistently
+- [ ] Commit message clear and descriptive
+
+### Commit Message Format
+```
+type(scope): description
+
+Examples:
+feat(calculator): add 50 new physics formulas
+fix(audio): resolve mic permission bug on Safari
+docs(readme): update installation steps
+chore(deps): upgrade React to 19.2
+```
+
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`
 
 ---
 
-## 💬 Questions?
+## 🐛 Reporting Bugs
 
-Open an issue or discussion. Happy coding! 🚀
+When reporting bugs, include:
+
+1. **Browser**: Chrome 120, Safari 17, etc.
+2. **OS**: Windows 11, macOS 14, Android 13
+3. **Steps to reproduce**: Exact clicks/inputs
+4. **Expected behavior**
+5. **Actual behavior**
+6. **Console errors**: F12 → Console tab
+7. **Screenshots**: If UI bug
+
+---
+
+## ⭐ Feature Requests
+
+Before requesting:
+1. Check [FEATURES.md](./FEATURES.md) — might already exist
+2. Check [LIMITATIONS.md](./LIMITATIONS.md) — known issue
+3. Search existing issues
+
+When requesting:
+1. Clear use case ("As a user, I want...")
+2. Why current solution doesn't work
+3. Mockup/example if UI feature
+
+---
+
+## 💬 Community
+
+- **GitHub**: [SudhirDevOps1](https://github.com/SudhirDevOps1)
+- **Issues**: Bug reports and discussions
+- **Discussions**: Feature ideas and Q&A
+
+---
+
+## 📜 License
+
+By contributing, you agree your contributions will be licensed under MIT.
+
+---
+
+## 🙏 Thanks!
+
+Every contribution, big or small, makes MYRA better. Whether it's:
+- 🐛 Reporting a bug
+- 💡 Suggesting a feature
+- 📝 Improving docs
+- 🎨 Designing UI
+- ⚙️ Writing code
+
+You're awesome! Thank you 💖
+
+---
+
+**Maintained by [Sudhir Singh](https://github.com/SudhirDevOps1)** • [@SudhirDevOps1](https://github.com/SudhirDevOps1)
+
+Made in 🇮🇳 India

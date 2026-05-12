@@ -111,15 +111,15 @@ async function safeFetch(url: string, opts?: RequestInit): Promise<any> {
 
 // ===== TOOL 1: IP LOCATION (ip-api.com - FREE, no key) =====
 async function fetchIpLocation(): Promise<IpLocation> {
-  const data = await safeFetch('http://ip-api.com/json/?lang=en');
+  const data = await safeFetch('https://ipapi.co/json/');
   return {
-    city: data.city || 'Unknown',
-    region: data.regionName || '',
-    country: data.country || 'Unknown',
-    lat: data.lat || 0,
-    lon: data.lon || 0,
-    timezone: data.timezone || 'UTC',
-    isp: data.isp || '',
+    city: data.city || data.ip || 'Unknown',
+    region: data.region || data.region_code || '',
+    country: data.country_name || data.country || 'Unknown',
+    lat: data.latitude || data.lat || 0,
+    lon: data.longitude || data.lon || 0,
+    timezone: data.timezone || data.utc_offset || 'UTC',
+    isp: data.org || data.isp || '',
   };
 }
 
@@ -144,24 +144,31 @@ async function fetchCurrencyRates(base: string = 'USD'): Promise<CurrencyRate[]>
 
 // ===== TOOL 3: LIVE SPORTS (api-football v1 - FREE tier) =====
 async function fetchLiveScores(): Promise<SportsMatch[]> {
-  const data = await safeFetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
-    headers: {
-      'X-RapidAPI-Key': '4a8e3b2c1dmsh1234567890abcdef',
-      'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
-    },
-  });
-  if (!data?.response) return [];
-  return data.response.slice(0, 8).map((m: any) => ({
-    id: m.fixture.id,
-    sport: 'Football',
-    league: m.league.name,
-    homeTeam: m.teams.home.name,
-    awayTeam: m.teams.away.name,
-    homeScore: m.goals.home || 0,
-    awayScore: m.goals.away || 0,
-    status: m.fixture.status.short || 'Live',
-    date: m.fixture.date,
-  }));
+  try {
+    const res = await fetch('https://api-football-v1.p.rapidapi.com/v3/fixtures?live=all', {
+      method: 'GET' as const,
+      headers: {
+        'X-RapidAPI-Key': '4a8e3b2c1dmsh1234567890abcdef',
+        'X-RapidAPI-Host': 'api-football-v1.p.rapidapi.com',
+      },
+    });
+    if (!res.ok) throw new Error('Sports API unavailable');
+    const data = await res.json();
+    if (!data?.response) throw new Error('No live matches');
+    return data.response.slice(0, 8).map((m: any) => ({
+      id: m?.fixture?.id ?? Date.now(),
+      sport: 'Football',
+      league: m?.league?.name ?? 'Unknown League',
+      homeTeam: m?.teams?.home?.name ?? 'Home',
+      awayTeam: m?.teams?.away?.name ?? 'Away',
+      homeScore: m?.goals?.home ?? 0,
+      awayScore: m?.goals?.away ?? 0,
+      status: m?.fixture?.status?.short ?? 'Live',
+      date: m?.fixture?.date ?? '',
+    }));
+  } catch {
+    return [];
+  }
 }
 
 // Fallback: simulated live scores if API fails
@@ -178,41 +185,51 @@ function getFallbackScores(): SportsMatch[] {
 
 // ===== TOOL 4: NEWS HEADLINES (NewsAPI FREE alternative - gnews) =====
 async function fetchNews(country: string = 'in', category: string = 'general'): Promise<NewsArticle[]> {
+  // Primary: gnews
   try {
-    const data = await safeFetch(`https://gnews.io/api/v4/top-headlines?country=${country}&category=${category}&lang=en&max=8`, {
-      headers: { 'X-Api-Key': 'your-free-key-here' },
-    });
-    if (data?.articles) {
+    const data = await safeFetch(
+      `https://gnews.io/api/v4/top-headlines?country=${country}&category=${category}&lang=en&max=8&apikey=`,
+      {}
+    );
+    if (Array.isArray(data?.articles) && data.articles.length > 0) {
       return data.articles.slice(0, 8).map((a: any) => ({
-        title: a.title,
-        description: a.description || '',
-        url: a.url,
-        source: a.source?.name || 'News',
-        publishedAt: a.publishedAt,
+        title: a?.title ?? 'Untitled',
+        description: a?.description ?? '',
+        url: a?.url ?? '#',
+        source: a?.source?.name ?? 'News',
+        publishedAt: a?.publishedAt ?? '',
       }));
     }
   } catch {
-    // Fallback to RSS via rss2json
-    try {
-      const rss = await safeFetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml');
-      return (rss.items || []).slice(0, 8).map((item: any) => ({
-        title: item.title,
-        description: item.description?.replace(/<[^>]*>/g, '').slice(0, 120) + '...',
-        url: item.link,
-        source: 'BBC World',
-        publishedAt: item.pubDate,
-      }));
-    } catch {
-      // Final fallback
-      return [
-        { title: 'Technology advances reshape daily life', description: 'New AI tools are transforming how people work and communicate globally.', url: '#', source: 'Tech Today', publishedAt: '2 hours ago' },
-        { title: 'Global climate summit reaches historic agreement', description: 'World leaders commit to ambitious new carbon reduction targets for 2030.', url: '#', source: 'World News', publishedAt: '3 hours ago' },
-        { title: 'Space exploration: New Mars mission announced', description: 'International space agency reveals plans for crewed Mars expedition by 2035.', url: '#', source: 'Science Daily', publishedAt: '5 hours ago' },
-        { title: 'Stock markets hit record highs amid optimism', description: 'Global indices surge as economic indicators show strong growth across sectors.', url: '#', source: 'Finance Wire', publishedAt: '6 hours ago' },
-        { title: 'Healthcare breakthrough in cancer treatment', description: 'New immunotherapy approach shows 90% success rate in clinical trials.', url: '#', source: 'Health Report', publishedAt: '8 hours ago' },
-      ];
-    }
+    // silent
   }
+
+  // Fallback: BBC RSS via rss2json
+  try {
+    const rss = await safeFetch(
+      'https://api.rss2json.com/v1/api.json?rss_url=https://feeds.bbci.co.uk/news/world/rss.xml'
+    );
+    if (Array.isArray(rss?.items) && rss.items.length > 0) {
+      return rss.items.slice(0, 8).map((item: any) => ({
+        title: item?.title ?? 'Untitled',
+        description: (item?.description ?? '').replace(/<[^>]*>/g, '').slice(0, 120) + '...',
+        url: item?.link ?? '#',
+        source: 'BBC World',
+        publishedAt: item?.pubDate ?? '',
+      }));
+    }
+  } catch {
+    // silent
+  }
+
+  // Final fallback
+  return [
+    { title: 'Technology advances reshape daily life', description: 'New AI tools are transforming how people work and communicate globally.', url: '#', source: 'Tech Today', publishedAt: '2 hours ago' },
+    { title: 'Global climate summit reaches historic agreement', description: 'World leaders commit to ambitious new carbon reduction targets for 2030.', url: '#', source: 'World News', publishedAt: '3 hours ago' },
+    { title: 'Space exploration: New Mars mission announced', description: 'International space agency reveals plans for crewed Mars expedition by 2035.', url: '#', source: 'Science Daily', publishedAt: '5 hours ago' },
+    { title: 'Stock markets hit record highs amid optimism', description: 'Global indices surge as economic indicators show strong growth across sectors.', url: '#', source: 'Finance Wire', publishedAt: '6 hours ago' },
+    { title: 'Healthcare breakthrough in cancer treatment', description: 'New immunotherapy approach shows 90% success rate in clinical trials.', url: '#', source: 'Health Report', publishedAt: '8 hours ago' },
+  ];
 }
 
 // ===== TOOL 5: RANDOM USER (randomuser.me - FREE) =====
@@ -294,7 +311,7 @@ const POPULAR_ARTISTS = ['Taylor Swift', 'BTS', 'Drake', 'Arijit Singh', 'The We
 
 // ===== NEW TOOLS APIS =====
 async function fetchUniversities(name: string): Promise<University[]> {
-  const data = await safeFetch(`http://universities.hipolabs.com/search?name=${encodeURIComponent(name)}`);
+  const data = await safeFetch(`https://universities.hipolabs.com/search?name=${encodeURIComponent(name)}`);
   return data.slice(0, 10);
 }
 
@@ -486,6 +503,7 @@ export default function ToolsDashboard({ open, accentColor, onClose, lang }: Too
     { key: 'trivia', icon: '❓', label: 'Quiz' },
     { key: 'nasa', icon: '🚀', label: 'NASA' },
     { key: 'music', icon: '🎵', label: 'Music' },
+    { key: 'calc', icon: '🧮', label: 'Calc' },
   ];
 
   return (
@@ -973,7 +991,7 @@ export default function ToolsDashboard({ open, accentColor, onClose, lang }: Too
         {/* Footer */}
         <div className="px-4 py-3 text-center" style={{ borderTop: `1px solid ${accentColor}11` }}>
           <p className="text-[9px] text-[#444] font-mono">
-            All APIs: ip-api · exchangerate · football-API · RSS2JSON · randomuser.me · coolors · Wikipedia — All FREE
+            All APIs: ipapi · exchangerate · football-API · RSS2JSON · randomuser.me · coolors · Wikipedia — All FREE
           </p>
         </div>
 

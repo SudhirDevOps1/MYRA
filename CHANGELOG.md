@@ -1,74 +1,180 @@
 # 📋 MYRA — Changelog
 
-## v2.5 — Current (March 2026)
+All notable changes to MYRA are documented here.
 
-### ✨ New Features
-- **API Key Validation** — Real validation calls with ✅/❌ status badges
-- **Connection States** — Connecting, Connected, Failed with retry button
-- **Real SVG Logo** — `MyraLogo.tsx` component + external icon files
-- **Favicon Fix** — Proper `myra-favicon.svg` + `myra-touch-icon.svg`
-- **Voice Quality Improvement** — `useTTS.ts` now scores voices to prefer natural ones
-- **Speech Text Cleaner** — Strips markdown/emoji before speaking
-- **Voice lang/rate/pitch** — Better defaults for natural sound
+**Maintained by**: [Sudhir Singh](https://github.com/SudhirDevOps1) ([@SudhirDevOps1](https://github.com/SudhirDevOps1))
+
+---
+
+## [v2.5.0] — Production Ready (Current)
+
+### 🎉 Major Updates
+- **Production-Grade Footer** — Beautiful, branded footer with Sudhir Singh credentials, GitHub links, theme-matching gradient, taglines, and responsive layout
+- **Polished UI/UX** — Refined chat bubbles with theme-tinted backgrounds, improved spacing, better mobile responsiveness
+- **Enhanced Top Bar** — Glow effect on MYRA logo, better tracking, "AI · Voice · OS" subtitle
+- **Improved ActionChip** — Larger touch targets, hover scale effects, better mobile visibility
+- **Calculator (35+ Formulas)** — New comprehensive calculator with Health, Finance, Math, Physics, Conversion, Date categories
+- **Tools Dashboard Expanded** — 12 free tools including Universities, Research Papers, Dictionary, Trivia, NASA APOD, Music
+- **Read Aloud Button** — 🔊 button on every chat message
+- **All .md Files Refreshed** — README, FEATURES, USES, LIMITATIONS, CONTRIBUTING, CHANGELOG fully updated
 
 ### 🐛 Bug Fixes
-- Fixed: `isConnected` was `true` even with invalid API key → now validates
-- Fixed: Greeting only fires once per successful connection
-- Fixed: Response time graph had fake zero entries from transcript callback
-- Fixed: SVG gradient ID conflicts when logo rendered multiple times
+- IP Location now uses HTTPS (ipapi.co) — was failing on HTTPS sites
+- News API has triple fallback (gnews → BBC RSS → static headlines)
+- Sports API gracefully falls back to demo scores
+- Universities API switched from HTTP to HTTPS
+- TypeScript implicit `any` errors fixed in Calculator
+- Duplicate Calculator chip icon resolved (🧮 instead of ⚙️)
+- Footer no longer overlaps with demo button
 
-### 🎨 UI Improvements
-- Logo in main header, Settings panel, Provider panel, About panel
-- Connection status dot on provider button (green/red)
-- Improved status messages during connection flow
-
----
-
-## v2.0 — February 2026
-
-### ✨ Major Features
-- **12 New AI Providers** — Groq, xAI Grok, Mistral, OpenRouter, Cohere, Perplexity, Together, Fireworks, Cerebras added
-- **Streaming Responses** — Real-time SSE token streaming
-- **Multi-Session Chat History** — Save, switch, export, delete sessions
-- **Stats Panel** — Messages, words, response times, mini chart
-- **Token/Cost Tracker** — Per-provider request count + cost estimates
-- **6 Theme Switcher** — Crimson, Aqua, Royal, Matrix, Solar, Sakura
-- **Voice Picker** — All browser voices + speed/pitch/volume sliders
-- **Quick Actions** — 8 preset prompt chips
-- **Markdown Rendering** — Code blocks, bold, italic, lists, quotes
-- **Custom System Prompt** — User AI instructions
-- **Wake Word Detection** — "Hey MYRA" background listener
-- **Export Chats** — JSON and TXT download
-- **Typing Indicator** — Animated dots during thinking
-- **Text Input Bar** — Keyboard typing support
-- **Long-Term Memory** — MYRA remembers user facts
-- **Backup/Restore** — Full data export/import
-- **Chat Search** — Search & filter messages
-- **Copy Messages** — Hover to copy
-- **Keyboard Shortcuts** — 8 shortcuts
-- **PWA Support** — Installable + manifest
-- **Offline Detection** — Connection status
-- **About Panel** — Feature list + shortcuts
+### ⚡ Performance
+- Build size: 472.47 KB (133.29 KB gzipped)
+- Modules: 64
+- Build time: <2s
 
 ---
 
-## v1.0 — January 2026
+## [v2.4.0] — January 2026
+
+### Added
+- **Footer with Branding** — Sudhir Singh credentials with GitHub link
+- **MD Documentation** — README, FEATURES, USES, LIMITATIONS, CONTRIBUTING, CHANGELOG
+- **Read Aloud Button** in chat messages
+
+### Fixed
+- Audio engine refs stability
+- Wake word language detection
+- Duplicate variable declarations
+
+---
+
+## [v2.3.0] — January 2026
+
+### Added
+- **20+ Models per Provider** — Gemini, Groq, OpenAI, Claude, etc. now have 20+ models each
+- **Model Search** — Filter through 250+ models
+- **Free Model Badges** — Identify free-tier models
+- **Auto-Validate Default Model** — Falls back if selected model unavailable
+- **Hindi/English Strict Language Lock** — System prompt enforces response language
+
+### Fixed
+- API key validation now actually tests with real API call
+- Auto-reconnect on provider/model/key change
+- Greeting fires only once per successful connection
+
+---
+
+## [v2.2.0] — January 2026
+
+### Added
+- **Hindi/English Voice Toggle** — One-click language switch
+- **8 Voice Profiles** — Aoede, Kore, Leda, Zephyr, Charon, Fenrir, Puck, Orus
+- **Long Text Chunking** — TTS splits at sentence boundaries
+- **Emoji Stripping** — Clean text before TTS speaks
+- **Wake Word Variants** — "Hey MYRA", "Hi MYRA", "Ok MYRA", "मायरा", "हे मायरा"
+
+### Fixed
+- TTS sounds less robotic with smart voice scoring
+- Wake word + main mic conflict resolved
+- Mic tap responds instantly with touch-action: manipulation
+
+---
+
+## [v2.1.0] — December 2025
+
+### Added
+- **Weather Dashboard** — Free Open-Meteo + Nominatim
+- **Tools Dashboard (7 tools)** — IP, Currency, Sports, News, User, Colors, Music
+- **Fun Zone** — Jokes, Dog photos, Useless facts
+- **Real SVG Logo** — Multiple favicon files
+- **Connection State Badge** — Verifying/Connected/Failed/No Key
+
+### Fixed
+- API key validation with proper retry button
+- Provider button shows live connection dot
+
+---
+
+## [v2.0.0] — November 2025
+
+### Major Features
+- **13 AI Providers** — Gemini, Groq, OpenAI, Claude, Grok, DeepSeek, Mistral, OpenRouter, Cohere, Perplexity, Together, Fireworks, Cerebras
+- **Streaming Responses** — Real-time SSE
+- **Multi-Session Chat** — Save, switch, export
+- **Stats Panel** — Messages, words, response times
+- **Token Tracker** — Per-provider cost
+- **6 Themes** — Crimson, Aqua, Royal, Matrix, Solar, Sakura
+- **Voice Picker** — All browser voices
+- **Quick Actions** — 8 preset prompts
+- **Markdown Rendering** — Code, bold, italic, lists
+- **Custom System Prompt**
+- **Wake Word Detection**
+- **Long-Term Memory**
+- **Backup/Restore**
+- **Chat Search**
+- **Keyboard Shortcuts** — 8 total
+- **PWA Support** — Installable
+
+---
+
+## [v1.0.0] — October 2025
 
 ### Initial Release
-- **Google Gemini** AI provider
-- **3 Personality Modes** — GF, Professional, Assistant
-- **Hinglish + English** natural conversation
-- **Voice Recognition** — Web Speech API
-- **Text-to-Speech** — Web Speech Synthesis
-- **Orb Animation** — Canvas-drawn animated orb
-- **Waveform** — 20-bar amplitude visualization
-- **Chat** — Message bubbles with timestamps
-- **Command Parser** — Hinglish/English voice commands
-- **Prime Contacts** — Multi-contact management
-- **Settings** — API key, name, model, voice, personality
-- **Demo Mode** — Works without API key
-- **Incoming Call Demo** — Simulated call handling
-- **Mic Button** — Long press to interrupt
-- **Mute Toggle** — Quick mic control
-- **Red Overlay Effect** — Visual active state
-- **Dark Theme** — `#050505` base with red accents
+- Google Gemini AI provider
+- 3 personality modes (GF, Professional, Assistant)
+- Hinglish + English conversation
+- Voice recognition (Web Speech API)
+- Text-to-speech
+- Animated Canvas orb
+- 20-bar waveform
+- Chat with timestamps
+- Voice command parser
+- Prime contacts
+- Settings persistence
+- Demo mode
+- Incoming call demo
+- Mic button with long press
+- Mute toggle
+- Red overlay effect
+- Dark theme
+
+---
+
+## 🔮 Coming in v2.6.0 (Q1 2026)
+
+- 🚧 Compare Mode (side-by-side AI providers)
+- 🚧 100+ more calculator formulas (target 500+)
+- 🚧 Pin/bookmark messages
+- 🚧 API proxy server option
+- 🚧 More voice profiles
+
+---
+
+## 📊 Statistics
+
+| Version | Files | Lines | Features | Build Size |
+|---------|-------|-------|----------|------------|
+| v1.0 | 25 | 3,000 | 35 | 280 KB |
+| v2.0 | 38 | 6,500 | 95 | 350 KB |
+| v2.3 | 40 | 8,500 | 120 | 380 KB |
+| v2.5 | 40 | 10,500 | 150+ | 472 KB |
+
+---
+
+## 🙏 Acknowledgments
+
+Special thanks to:
+- **Open-Meteo** — Free weather API
+- **OpenAlex** — Free research papers (250M+)
+- **Wikipedia** — Free encyclopedia API
+- **Open Trivia DB** — Free quiz API
+- **Hipolabs Universities** — Free university data
+- **NASA** — Astronomy Picture of the Day
+- **Google AI** — Gemini SDK
+- All free API providers making MYRA possible
+
+---
+
+**Built with ❤️ by [Sudhir Singh](https://github.com/SudhirDevOps1)** • [@SudhirDevOps1](https://github.com/SudhirDevOps1)
+
+Made in 🇮🇳 India

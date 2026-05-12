@@ -1,61 +1,170 @@
-# USES.md — Voice Commands & Quick-Start Guide
+# 📖 MYRA — Use Cases & Examples
 
-MYRA acts as an smart assistant capable of handling conversational talk or routing specific voice inputs to system commands.
+## 🏠 Personal Use
 
----
+### 1. Hands-Free Assistant
+```
+You:    "Hey MYRA"
+MYRA:   🔊 "Haan bolo!"
+You:    "Aaj ka weather kaisa hai?"
+MYRA:   🔊 "Aaj sunny rahega, 32°C. Bahar jaane ke liye perfect din hai!"
+```
 
-## 💬 Voice Triggers & Commands
+### 2. Quick Jokes & Entertainment
+```
+You:    "Koi funny joke sunao"
+MYRA:   🔊 "Ek computer ne doosre se kaha: Tumhare bytes bahut cute hain! 😄"
+```
 
-Speak any of these keywords during voice mode to execute system actions:
+### 3. Motivation & Productivity
+```
+You:    "Motivation do"
+MYRA:   🔊 "Rukna allowed nahi hai! Aaj wahi karo jo kal tum sochte the ki kal karoge. ❤️"
+```
 
-### 1. Web Shortcuts & App Launcher
-- 🌐 **YouTube:** *"Open YouTube"* / *"YouTube kholo"*
-- 💬 **WhatsApp:** *"Open WhatsApp"* / *"WhatsApp karo [Name] ko"*
-- 🗺️ **Maps:** *"Open Google Maps"* / *"Maps kholo"*
-- 🎵 **Spotify:** *"Launch Spotify"* / *"Spotify kholo"*
-- 📧 **Gmail:** *"Open Gmail"* / *"Email check karo"*
-- 🛍️ **Shopping:** *"Open Amazon"* / *"Amazon kholo"*
+### 4. Memory & Personalization
+```
+You:    "Mera naam Rahul hai aur mujhe coding pasand hai"
+MYRA:   🔊 "Noted Rahul! Coding toh life hai na! Kya project pe kaam kar rahe ho?"
+// MYRA now remembers: Rahul is name, likes coding
+```
 
-### 2. Quick Control Actions
-- 🔦 **Torch:** *"Flashlight on"* / *"Torch band karo"* (Simulated indicator)
-- 🛜 **WiFi:** *"WiFi on"* / *"WiFi band karo"* (Simulated indicator)
-- 🔊 **Volume:** *"Volume up"* / *"Volume down"* / *"Awaaz kam karo"*
-- ⏹️ **Interrupt Speech:** Long-press the mic button to instantly halt MYRA speaking mid-sentence.
-
----
-
-## 👩 Personality Presets
-
-Switch personalities under settings to modify MYRA's tone:
-
-### 1. 💖 GF Mode (Hinglish Mix)
-Uses natural conversational Hinglish, ideal for high-warmth interaction:
-- *User:* "Hi MYRA!"
-- *MYRA:* "Haan [Name]! Tumne yaad kiya? Bolo bolo kya chahiye, main yahin hoon! 😊❤️"
-
-### 2. 💼 Professional Mode (Formal English)
-Strictly formal, precise, with short sentences:
-- *User:* "Draft an itinerary."
-- *MYRA:* "I will help you draft a focused itinerary. Please specify your location and duration."
-
-### 3. 🤖 Assistant Mode (Balanced Friendly)
-Balanced helpful tone, multi-lingual:
-- *User:* "Make a productive plan."
-- *MYRA:* "Bilkul! Yahaan 3 simple tips hain jo aapka din productive bana sakte hain. Ek to-do list banayein, distractions ko band karein, aur breaks lein! Let's do this! ✨"
+### 5. Multi-Session Chat
+```
+Session 1: "Work Ideas" → brainstorming business concepts with GPT-4o
+Session 2: "Casual Chat"  → Hinglish conversations with Grok
+Session 3: "Code Help"    → Programming questions with Claude
+// Switch between them instantly
+```
 
 ---
 
-## ⚡ Quick Action Chips
-If you don't feel like speaking, use the fast action chips below the Orb:
-- ⚡ **Quote:** Instantly fetch a motivational quote.
-- 🍳 **Recipe:** Ask for a fast 15-minute recipe idea.
-- 💭 **Motivate:** Prompt MYRA to lift your spirits when feeling down.
-- 😄 **Joke:** Ask for a funny bilingual joke.
+## 💼 Professional Use
+
+### 6. Meeting Preparation
+```
+You:    "3 tips for a productive meeting"
+MYRA:   🔊 "1. Clear agenda banao. 2. Strict time limit rakho. 3. Action items assign karo."
+```
+
+### 7. Quick Research
+```
+You:    "Explain quantum computing in simple terms"
+MYRA:   (streaming response with bold, list formatting)
+        # Quantum Computing
+        - Uses qubits instead of bits
+        - Can be 0, 1, or both at once
+        - Solves problems classical computers can't
+```
+
+### 8. Code Assistant
+```
+You:    "Write a QuickSort in Python"
+MYRA:   ```python
+        def quicksort(arr):
+            if len(arr) <= 1:
+                return arr
+            pivot = arr[0]
+            left = [x for x in arr[1:] if x < pivot]
+            right = [x for x in arr[1:] if x >= pivot]
+            return quicksort(left) + [pivot] + quicksort(right)
+        ```
+```
+
+### 9. Recipe Ideas
+```
+You:    "Easy 15-minute recipe"
+MYRA:   🔊 "Maggi banane ka idea hai? Kidding! Paneer bhurji banao: paneer, onion, tomato, spices. 15 mins!"
+```
 
 ---
 
-## 🧠 Training Memory
-You can teach MYRA about yourself just by talking!
-- Say *"My name is Rohan"* or *"I love drinking green tea"* or *"I live in Bangalore"*.
-- Open the **Memory** panel to verify what MYRA remembered.
-- In both online and demo modes, MYRA will recall these facts during conversation.
+## 🧠 Developer / Power User
+
+### 10. A/B Testing AI Providers
+```
+1. Ask same question to Gemini → get answer
+2. Switch to Claude → ask same question → compare
+3. Switch to Grok → ask same question → compare
+// All in the same UI with one click
+```
+
+### 11. Custom System Prompt
+```
+System Prompt: "You are MYRA, a sarcastic AI who uses dark humor. Always end with '🤷'"
+You:          "Kya haal hai?"
+MYRA:         "Bas zinda hoon, jo ki already surprising hai. 🤷"
+```
+
+### 12. Backup & Restore
+```
+Export: Settings → Backup → Download JSON (saves ALL chats, settings, memory)
+Import: Settings → Backup → Upload JSON (restores everything)
+```
+
+### 13. Different Provider Strengths
+```
+Gemini:     "Design a UI color palette" → Great design sense
+Claude:     "Explain this legal document" → Strong reading comprehension
+GPT-4o:     "Generate a business strategy" → Broad knowledge
+Grok:       "Roast my startup idea" → Humorous/edgy responses
+DeepSeek:   "Refactor this React code" → Strong coding
+```
+
+---
+
+## 📱 Mobile Use
+
+### 14. PWA Installation
+```
+1. Open MYRA in Chrome/Safari
+2. Tap "Add to Home Screen"
+3. MYRA installs as a standalone app
+4. Opens in fullscreen with its own icon
+```
+
+### 15. Voice-Only Mode
+```
+1. Enable "Wake Word" in Settings
+2. Phone on desk
+3. Say "Hey MYRA" → MYRA activates
+4. Speak your command → MYRA responds via speaker
+5. No need to touch the phone
+```
+
+---
+
+## 🎨 Customization Examples
+
+### Theme: Matrix (Green)
+```
+Settings → Customize → Theme → Matrix
+→ Everything turns neon green: orb, buttons, scrollbar, badges
+```
+
+### Voice: Slow + Deep
+```
+Settings → Customize → Voice
+→ Speed: 0.75x, Pitch: 0.9x
+→ Preview: "Hi! Main MYRA hoon..."
+```
+
+---
+
+## 🔧 Common Voice Commands
+
+| Situation | Say This |
+|-----------|----------|
+| Open YouTube | "YouTube kholo" |
+| Close app | "WhatsApp band karo" |
+| Call someone | "Rahul ko call karo" |
+| Send message | "Mom ko SMS bhejo" |
+| Volume up | "Volume badhao" |
+| Volume down | "Volume kam karo" |
+| Flashlight | "Torch on karo" |
+| WiFi | "WiFi on karo" |
+| Bluetooth | "Bluetooth on karo" |
+
+---
+
+*These are just examples — MYRA can do much more through natural conversation!*

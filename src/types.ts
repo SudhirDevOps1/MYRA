@@ -146,6 +146,7 @@ export interface AppSettings {
   hapticEnabled: boolean;
   saveHistory: boolean;
   language: string;
+  ttsLanguage: 'en' | 'hi';
   quickActions: QuickAction[];
 }
 
@@ -184,6 +185,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   hapticEnabled: true,
   saveHistory: true,
   language: 'en-IN',
+  ttsLanguage: 'en',
   quickActions: DEFAULT_QUICK_ACTIONS,
 };
 

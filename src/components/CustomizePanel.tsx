@@ -13,13 +13,16 @@ interface CustomizePanelProps {
 
 export default function CustomizePanel({ open, settings, onUpdate, onClose, accentColor }: CustomizePanelProps) {
   const [tab, setTab] = useState<'theme' | 'voice' | 'prompt' | 'advanced'>('theme');
-  const { voices, speak, cancel } = useTTS(settings.voicePrefs);
+  const { voices, speak, cancel, activeVoice } = useTTS(settings.voicePrefs, settings.ttsLanguage);
 
   if (!open) return null;
 
   const previewVoice = () => {
     cancel();
-    speak('Hi! Main MYRA hoon. Yeh meri awaaz ka preview hai.', () => {});
+    const previewText = settings.ttsLanguage === 'hi'
+      ? 'Namaste! Main MYRA hoon. Yeh meri Hindi awaaz ka preview hai.'
+      : 'Hi! I am MYRA. This is a preview of my voice.';
+    speak(previewText, () => {});
   };
 
   return (
@@ -78,22 +81,80 @@ export default function CustomizePanel({ open, settings, onUpdate, onClose, acce
 
         {tab === 'voice' && (
           <div className="space-y-4">
+            {/* Language Toggle */}
             <div>
-              <label className="text-[10px] text-[#666] font-mono uppercase block mb-1.5">System Voice</label>
+              <label className="text-[10px] text-[#666] font-mono uppercase block mb-1.5">Voice Language</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onUpdate({ ttsLanguage: 'en' })}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    settings.ttsLanguage === 'en'
+                      ? 'text-black'
+                      : 'bg-[#111] text-[#777] border border-[#333]'
+                  }`}
+                  style={{ backgroundColor: settings.ttsLanguage === 'en' ? accentColor : undefined }}
+                >
+                  🇬🇧 English
+                </button>
+                <button
+                  onClick={() => onUpdate({ ttsLanguage: 'hi' })}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                    settings.ttsLanguage === 'hi'
+                      ? 'text-black'
+                      : 'bg-[#111] text-[#777] border border-[#333]'
+                  }`}
+                  style={{ backgroundColor: settings.ttsLanguage === 'hi' ? accentColor : undefined }}
+                >
+                  🇮🇳 हिंदी
+                </button>
+              </div>
+              <p className="text-[10px] text-[#555] mt-1 font-mono">
+                {settings.ttsLanguage === 'hi'
+                  ? 'MYRA will speak in Hindi. Best for Hinglish responses.'
+                  : 'MYRA will speak in English. Best for professional responses.'}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-[10px] text-[#666] font-mono uppercase block mb-1.5">
+                System Voice <span className="text-[#555]">({settings.ttsLanguage === 'hi' ? 'Hindi' : 'English'} only)</span>
+              </label>
               <select
                 value={settings.voicePrefs.voiceURI}
                 onChange={e => onUpdate({ voicePrefs: { ...settings.voicePrefs, voiceURI: e.target.value } })}
                 className="w-full bg-[#111] border border-[#333] rounded-xl px-3 py-2 text-[#EEE] text-sm focus:outline-none"
                 style={{ borderColor: accentColor }}
               >
-                <option value="">Auto (best match)</option>
-                {voices.map(v => (
-                  <option key={v.voiceURI} value={v.voiceURI} className="bg-[#111]">
-                    {v.name} ({v.lang})
-                  </option>
-                ))}
+                <option value="">🤖 Auto (best quality)</option>
+                {voices
+                  .filter(v => {
+                    const lang = v.lang.toLowerCase();
+                    return settings.ttsLanguage === 'hi'
+                      ? lang.startsWith('hi') || lang.includes('hi')
+                      : lang.startsWith('en') || lang.includes('en');
+                  })
+                  .map(v => (
+                    <option key={v.voiceURI} value={v.voiceURI} className="bg-[#111]">
+                      {v.name.includes('Google') ? '⭐ ' : v.name.includes('Microsoft') ? '✨ ' : v.name.includes('Apple') ? '🍎 ' : ''}
+                      {v.name} ({v.lang})
+                    </option>
+                  ))}
               </select>
-              <p className="text-[10px] text-[#555] mt-1 font-mono">{voices.length} voices available</p>
+              <p className="text-[10px] text-[#555] mt-1 font-mono">
+                {voices.filter(v => {
+                  const lang = v.lang.toLowerCase();
+                  return settings.ttsLanguage === 'hi'
+                    ? lang.startsWith('hi') || lang.includes('hi')
+                    : lang.startsWith('en') || lang.includes('en');
+                }).length} {settings.ttsLanguage === 'hi' ? 'Hindi' : 'English'} voices available
+              </p>
+              {activeVoice && (
+                <div className="mt-2 bg-[#111] rounded-lg px-3 py-2 flex items-center gap-2">
+                  <span className="text-[10px] text-[#666] font-mono">ACTIVE:</span>
+                  <span className="text-[11px] text-white font-semibold truncate">{activeVoice.name}</span>
+                  <span className="text-[9px] text-[#555] font-mono ml-auto">{activeVoice.lang}</span>
+                </div>
+              )}
             </div>
 
             <div>

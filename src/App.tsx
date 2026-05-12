@@ -80,7 +80,7 @@ export default function App() {
   );
 
   // TTS
-  const { speak: speakTTS, cancel: cancelTTS } = useTTS(settings.voicePrefs);
+  const { speak: speakTTS, cancel: cancelTTS, activeVoice } = useTTS(settings.voicePrefs, settings.ttsLanguage);
 
   // Stats
   const { stats, recordMessage, recordResponseTime, reset: resetStats } = useStats();
@@ -472,6 +472,11 @@ export default function App() {
         <ActionChip icon="📥" label="Backup" color={theme.primary} onClick={() => setShowBackup(true)} />
         <ActionChip icon="🪙" label="Tokens" color={theme.primary} onClick={() => setShowTokens(true)} />
         <ActionChip icon="ℹ️" label="About" color={theme.primary} onClick={() => setShowAbout(true)} />
+        <LanguageToggle
+          lang={settings.ttsLanguage}
+          onToggle={() => updateSettings({ ttsLanguage: settings.ttsLanguage === 'en' ? 'hi' : 'en' })}
+          color={theme.primary}
+        />
       </div>
 
       {/* Center Orb */}
@@ -493,6 +498,11 @@ export default function App() {
           />
           {settings.streamingEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>⚡ STREAMING</span>}
           {settings.wakeWordEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#1A0000] text-[#FF6D6D]">🎙️ "{settings.wakeWord}"</span>}
+          {activeVoice && (
+            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#111] text-[#888]" title={activeVoice.voiceURI}>
+              🔊 {activeVoice.name.slice(0, 20)}{activeVoice.name.length > 20 ? '…' : ''}
+            </span>
+          )}
         </div>
       </div>
 
@@ -552,6 +562,26 @@ export default function App() {
         <button onClick={() => (window as any).simulateIncomingCall?.('Priya')} className="text-[10px] text-[#555] bg-[#111] px-2 py-1 rounded">📞 Demo Call</button>
       </div>
     </div>
+  );
+}
+
+function LanguageToggle({ lang, onToggle, color }: { lang: 'en' | 'hi'; onToggle: () => void; color: string }) {
+  const isHindi = lang === 'hi';
+  return (
+    <button
+      onClick={onToggle}
+      className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-[10px] font-bold transition-all active:scale-95"
+      style={{
+        backgroundColor: isHindi ? `${color}22` : '#111',
+        border: `1px solid ${isHindi ? color : '#333'}`,
+        color: isHindi ? color : '#888',
+      }}
+      title={isHindi ? 'Hindi voice active — click for English' : 'English voice active — click for Hindi'}
+    >
+      <span className="text-xs">{isHindi ? '🇮🇳' : '🇬🇧'}</span>
+      <span>{isHindi ? 'हिंदी' : 'EN'}</span>
+      <span className="text-[8px] opacity-60">{isHindi ? 'Hindi' : 'English'}</span>
+    </button>
   );
 }
 

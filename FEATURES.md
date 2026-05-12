@@ -1,88 +1,140 @@
-# MYRA — Feature Catalog & Architecture
+# ✨ MYRA — Complete Feature List
 
-This document outlines every feature engineered into MYRA, detailing the technical specs and interactive systems.
+## 🧠 AI Engine
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Multi-Provider** | 13 AI providers: Gemini, Groq, xAI Grok, OpenAI, DeepSeek, Anthropic, Mistral, OpenRouter, Cohere, Perplexity, Together, Fireworks, Cerebras | ✅ |
+| **Provider Switching** | Hot-switch AI providers mid-session | ✅ |
+| **Per-Provider Models** | 4-5 models per provider, 50+ total | ✅ |
+| **API Key Validation** | Real validation call on connect with error feedback | ✅ |
+| **Streaming Responses** | Real-time SSE token streaming for OpenAI-compatible APIs | ✅ |
+| **Multi-Mode Routing** | Routes to Gemini SDK / OpenAI-compatible / Anthropic / Cohere APIs | ✅ |
+| **Response Time Tracking** | Per-request latency measurement | ✅ |
+| **Custom System Prompt** | User-defined AI instructions overlay | ✅ |
+| **Conversation History** | 12-message rolling window per provider | ✅ |
+| **3 Personality Modes** | GF (Hinglish), Professional (English), Assistant (balanced) | ✅ |
+| **Hinglish Support** | Mixed Hindi + English natural conversation | ✅ |
+| **Date/Time Context** | Current date/time injected into system prompt | ✅ |
+| **Custom Name** | AI addresses user by configured name | ✅ |
+
+## 🎤 Voice & Audio
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Voice Recognition** | Web Speech API with 8 languages | ✅ |
+| **Auto-Restart STT** | Mic reconnects after brief silence | ✅ |
+| **Text-to-Speech** | Web Speech Synthesis API | ✅ |
+| **Voice Picker** | Select from all browser voices | ✅ |
+| **Speed Control** | 0.5x–2x speech rate slider | ✅ |
+| **Pitch Control** | 0.5x–2x pitch slider | ✅ |
+| **Volume Control** | 0%–100% volume slider | ✅ |
+| **Voice Preview** | Test selected voice with sample text | ✅ |
+| **Wake Word Detection** | "Hey MYRA" background listener | ✅ |
+| **Custom Wake Word** | User-configurable wake phrase | ✅ |
+| **Amplitude Analysis** | Real-time RMS from microphone | ✅ |
+| **Waveform Visualization** | 20-bar animated waveform | ✅ |
+| **Voice Output Cleaning** | Strips markdown before speaking | ✅ |
+| **Natural Voice Preference** | Scores voices to prefer natural/Google voices | ✅ |
+| **Mute Toggle** | Quick mic mute | ✅ |
+| **Long Press Interrupt** | Stop MYRA mid-speech | ✅ |
+| **Haptic Feedback** | Vibration on actions (mobile) | ✅ |
+
+## 💬 Chat
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Markdown Rendering** | Code blocks, bold, italic, lists, quotes, links | ✅ |
+| **Streaming Display** | Live text as AI generates | ✅ |
+| **Typing Indicator** | Animated dots during AI thinking | ✅ |
+| **Copy Messages** | Click to copy any message | ✅ |
+| **Deduplication** | Skips duplicate AI responses | ✅ |
+| **Timestamps** | Time shown on every message | ✅ |
+| **User/AI Bubbles** | Distinct styles for both sides | ✅ |
+| **Text Input** | Keyboard typing with Enter to send | ✅ |
+| **Quick Actions** | 8 one-tap prompt chips | ✅ |
+| **Command Parser** | Hinglish + English voice commands | ✅ |
+| **App Launcher** | Opens web apps via voice | ✅ |
+| **Prime Contacts** | Multi-contact quick dial/message | ✅ |
+
+## 💾 Data & Persistence
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Multi-Session History** | Named, saveable chat sessions | ✅ |
+| **Session Switching** | Hot-switch between chats | ✅ |
+| **Session Export** | Download as JSON or TXT | ✅ |
+| **Session Delete** | Remove individual sessions | ✅ |
+| **Clear All** | Wipe all chat history | ✅ |
+| **Auto-Save** | Messages auto-saved to session | ✅ |
+| **Settings Persistence** | All settings in LocalStorage | ✅ |
+| **Long-Term Memory** | MYRA remembers user facts | ✅ |
+| **Memory Panel** | Search/view/delete memories | ✅ |
+| **Backup/Restore** | Full data export/import as JSON | ✅ |
+
+## 📊 Analytics
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Message Counter** | Total, user, AI message counts | ✅ |
+| **Word Counter** | Total words exchanged | ✅ |
+| **Response Time** | Average, fastest, slowest | ✅ |
+| **Mini Chart** | Recent 30 response times bar chart | ✅ |
+| **Token Tracker** | Per-provider request count | ✅ |
+| **Cost Estimator** | Approximate USD cost per provider | ✅ |
+| **Session Count** | Total sessions created | ✅ |
+| **Reset Stats** | Wipe analytics | ✅ |
+
+## 🎨 Customization
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **6 Themes** | Crimson, Aqua, Royal, Matrix, Solar, Sakura | ✅ |
+| **Live Theme Preview** | Instant color change across entire UI | ✅ |
+| **Theme Persistence** | Theme saved across reloads | ✅ |
+| **Dynamic Orb** | Orb colors match active theme | ✅ |
+| **Chat Bubble Colors** | User bubbles tinted to theme | ✅ |
+| **Scrollbar Colors** | Themed scrollbar thumb | ✅ |
+| **Glow Effects** | Background radial glows per theme | ✅ |
+
+## 🔧 Utilities
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Keyboard Shortcuts** | 8 shortcuts for navigation | ✅ |
+| **Offline Detection** | Red banner when internet lost | ✅ |
+| **Online/Offline Auto** | Reconnects when internet returns | ✅ |
+| **PWA Support** | Installable as native app | ✅ |
+| **Apple Touch Icon** | iOS home screen icon | ✅ |
+| **Web Manifest** | Full PWA manifest | ✅ |
+| **Demo Mode** | Works without any API key | ✅ |
+| **Battery Display** | Live battery percentage | ✅ |
+| **RAM Display** | Device memory shown | ✅ |
+| **Live Clock** | Seconds-updating time display | ✅ |
+| **Demo Call** | Simulated incoming call testing | ✅ |
+| **Escape to Close** | Close all panels with Escape | ✅ |
+| **Action Chips** | 9 quick-access buttons in header | ✅ |
+
+## 📞 Call Management
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Incoming Call Dialog** | Caller name + accept/reject | ✅ |
+| **Caller Announcement** | MYRA speaks caller name | ✅ |
+| **Voice Accept** | "uthao" / "accept" | ✅ |
+| **Voice Reject** | "nahi" / "reject" | ✅ |
+| **Auto-Timeout** | Missed call after 4.5s | ✅ |
+| **Call Confirmation** | MYRA confirms action taken | ✅ |
+
+## 🔐 Security
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **LocalStorage Only** | No server, all data local | ✅ |
+| **API Keys Hidden** | Password-type input fields | ✅ |
+| **No Telemetry** | Zero analytics or tracking | ✅ |
+| **Offline First** | Works without internet (demo) | ✅ |
 
 ---
 
-## 🎨 Design & Customization
-
-### 1. The Canvas Orb (`OrbAnimation.tsx`)
-A custom HTML5 Canvas drawing loop with 7 rendered layers reactive to conversational state:
-- **Idle State (Crimson):** Slow pulse (scale 1.0 ↔ 1.15) and radial glow breathing.
-- **Listening State (Red):** Pulsing wave rings and high-frequency active rotation.
-- **Speaking State (Purple):** Fast waves with amplitude-reactive particles scaling dynamically with voice output.
-- **Thinking State (Cyan):** Two spinning load-arcs revolving in opposite directions.
-
-### 2. Live Waveform (`WaveformView.tsx`)
-- 20 vertical rounded bars.
-- Live heights animated smoothly via Linear Interpolation (lerp): `height += (target - current) * 0.3`.
-- Active scaling powered by the Web Audio API extracting real-time RMS amplitude from your microphone stream.
-
-### 3. Theme Switcher (6 Accent Options)
-Instantly shifts gradients, shadows, borders, scrollbars, text overlays, and the glowing orbs:
-- 🔴 **Crimson (Default):** Warm romance, GF-mode vibe.
-- 🔵 **Aqua:** Cold hacker style, high-tech assistant.
-- 🟣 **Royal:** Dark neon purple magic.
-- 🟢 **Matrix:** Tech-green terminal look.
-- 🟡 **Solar:** Sunfire orange and deep yellow.
-- 🌸 **Sakura:** Pastel rose and soft pink.
-
----
-
-## 🧠 Brains & Memory Systems
-
-### 1. Long-Term Memory (`useLongTermMemory.ts`)
-- Automatically parses user speech patterns (e.g., *"my name is..."*, *"I like..."*, *"I live in..."*).
-- Stores key user facts persistently in `localStorage`.
-- Context is dynamically fed into fallback / demo prompts as long-term context.
-- Dedicated **Memory Manager** panel allows you to review, search, and delete learned facts.
-
-### 2. Chat Session History (`useChatHistory.ts`)
-- Keeps up to 50 active conversational threads saved in browser memory.
-- Sessions automatically get named based on the first query.
-- Supports instant JSON and plain TXT file exports.
-
----
-
-## ⚙️ Performance & Diagnostics
-
-### 1. Cost & Token Tracker (`TokenTracker.tsx`)
-- Tracks estimated token usage based on message character/word lengths.
-- Real-time pricing models map estimated costs for each of the 13 providers.
-- Displays request counters per provider in a nested breakdowns section.
-
-### 2. Live Stats & Graphing (`StatsPanel.tsx`)
-- Tracks user vs. MYRA message splits, words exchanged, and average response times.
-- Renders an interactive bar graph showing latency trends over the last 30 requests.
-
----
-
-## 🎙️ Smart TTS & Audio Systems
-
-### 1. Audio Voice Scorer (`useTTS.ts`)
-Standard browsers have dozens of robot-sounding TTS options. MYRA scans, ranks, and filters voices based on quality:
-- Filters out generic voice synthesizers (`espeak`, `robot`, `synthesizer`).
-- Favors advanced neural engines (`Natural`, `Microsoft`, `Google Female`).
-- Pre-filters Markdown notation, emoji clusters, and code blocks before speaking to prevent robotic pronunciation (e.g., stops speaking raw asterisks, code blocks, or triple backticks).
-
-### 2. Wake-word Detection (`useWakeWord.ts`)
-- Low-overhead background voice loop listening for your custom wake phrase (Default: *"Hey MYRA"*).
-- Triggers active microphone capture and auto-connects to selected provider.
-- Includes a brief dual haptic buzz vibration upon wake trigger.
-
----
-
-## 🔒 Utility & Data Portability
-
-### 1. Keyboard Shortcuts
-- **Ctrl + N:** New chat session
-- **Ctrl + S:** System Settings panel
-- **Ctrl + P:** Provider settings & API keys
-- **Ctrl + T:** Customize theme & voice sliders
-- **Ctrl + F:** Find messages in chat
-- **Ctrl + L:** Instant toggle mic (listening)
-- **Escape:** Close any active panel
-
-### 2. Backup & Restore (`BackupPanel.tsx`)
-- Fully export your complete MYRA database (conversations, stats, memory, custom prompts, and API keys) into a single portable `.json` backup file.
-- Restore on any browser or device instantly by uploading the JSON backup file.
+**Total Features: 85+** ✨

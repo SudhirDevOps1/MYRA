@@ -32,9 +32,29 @@ export function useAudioEngine(callbacks: AudioEngineCallbacks, options: AudioEn
   const startingRef = useRef(false);
   const callbacksRef = useRef(callbacks);
   const languageRef = useRef(options.language || 'en-IN');
+  const startRecognitionRef = useRef<(() => void) | null>(null);
 
   useEffect(() => { callbacksRef.current = callbacks; }, [callbacks]);
-  useEffect(() => { languageRef.current = options.language || 'en-IN'; }, [options.language]);
+  useEffect(() => {
+    const newLang = options.language || 'en-IN';
+    if (languageRef.current !== newLang) {
+      languageRef.current = newLang;
+      // Restart recognition with new language if currently listening
+      if (recognitionRef.current && isListeningRef.current && !isMutedRef.current) {
+        try {
+          recognitionRef.current.onend = null;
+          recognitionRef.current.stop();
+        } catch { /* ignore */ }
+        recognitionRef.current = null;
+        // Will be restarted by startRecognition next call cycle
+        setTimeout(() => {
+          if (isListeningRef.current && !isMutedRef.current) {
+            try { startRecognitionRef.current?.(); } catch { /* ignore */ }
+          }
+        }, 200);
+      }
+    }
+  }, [options.language]);
   useEffect(() => { isListeningRef.current = isListening; }, [isListening]);
   useEffect(() => { isMutedRef.current = isMuted; }, [isMuted]);
 
@@ -157,6 +177,9 @@ export function useAudioEngine(callbacks: AudioEngineCallbacks, options: AudioEn
     recognitionRef.current = recognition;
     recognition.start();
   }, []);
+
+  // Keep ref pointing to latest startRecognition
+  useEffect(() => { startRecognitionRef.current = startRecognition; }, [startRecognition]);
 
   const startListening = useCallback(async () => {
     if (isMutedRef.current || startingRef.current || isListeningRef.current) return;

@@ -13,7 +13,7 @@ interface CustomizePanelProps {
 
 export default function CustomizePanel({ open, settings, onUpdate, onClose, accentColor }: CustomizePanelProps) {
   const [tab, setTab] = useState<'theme' | 'voice' | 'prompt' | 'advanced'>('theme');
-  const { voices, speak, cancel, activeVoice } = useTTS(settings.voicePrefs, settings.ttsLanguage);
+  const { voices, speak, cancel, activeVoice } = useTTS(settings.voicePrefs, settings.ttsLanguage, settings.geminiVoice || 'Aoede');
 
   if (!open) return null;
 
@@ -110,8 +110,41 @@ export default function CustomizePanel({ open, settings, onUpdate, onClose, acce
               </div>
               <p className="text-[10px] text-[#555] mt-1 font-mono">
                 {settings.ttsLanguage === 'hi'
-                  ? 'MYRA will speak in Hindi. Best for Hinglish responses.'
+                  ? 'MYRA will speak in Hindi. Best for Hindi responses.'
                   : 'MYRA will speak in English. Best for professional responses.'}
+              </p>
+            </div>
+
+            {/* Voice Character/Profile Picker */}
+            <div>
+              <label className="text-[10px] text-[#666] font-mono uppercase block mb-1.5">Voice Character</label>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: 'Aoede',  emoji: '👩', label: 'Aoede',  desc: 'Female · Warm' },
+                  { id: 'Kore',   emoji: '👩‍🦰', label: 'Kore',   desc: 'Female · Soft' },
+                  { id: 'Leda',   emoji: '👩‍🎤', label: 'Leda',   desc: 'Female · Crisp' },
+                  { id: 'Zephyr', emoji: '🧚', label: 'Zephyr', desc: 'Female · Bright' },
+                  { id: 'Charon', emoji: '👨', label: 'Charon', desc: 'Male · Deep' },
+                  { id: 'Fenrir', emoji: '🧔', label: 'Fenrir', desc: 'Male · Calm' },
+                  { id: 'Puck',   emoji: '🧙', label: 'Puck',   desc: 'Male · Quick' },
+                  { id: 'Orus',   emoji: '🤴', label: 'Orus',   desc: 'Male · Smooth' },
+                ].map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => onUpdate({ geminiVoice: v.id as any })}
+                    className={`p-2 rounded-lg border-2 transition-all active:scale-95 ${
+                      settings.geminiVoice === v.id ? 'scale-105' : 'border-[#222] opacity-60 hover:opacity-100'
+                    }`}
+                    style={{ borderColor: settings.geminiVoice === v.id ? accentColor : undefined }}
+                    title={v.desc}
+                  >
+                    <div className="text-xl">{v.emoji}</div>
+                    <div className="text-[9px] text-white font-bold mt-0.5">{v.label}</div>
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-[#555] mt-1 font-mono">
+                Each voice has different rate/pitch profile for natural variation.
               </p>
             </div>
 

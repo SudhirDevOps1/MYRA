@@ -78,8 +78,12 @@ export default function App() {
     [settings.themeId]
   );
 
-  // TTS
-  const { speak: speakTTS, cancel: cancelTTS, activeVoice } = useTTS(settings.voicePrefs, settings.ttsLanguage);
+  // TTS — voiceId from gemini voice setting controls the acoustic profile
+  const { speak: speakTTS, cancel: cancelTTS, activeVoice } = useTTS(
+    settings.voicePrefs,
+    settings.ttsLanguage,
+    settings.geminiVoice || 'Aoede'
+  );
 
   // Stats
   const { stats, recordMessage, recordResponseTime, reset: resetStats } = useStats();
@@ -165,6 +169,16 @@ export default function App() {
     const memo = getMemoriesForPrompt(text);
     const memoLine = memo ? `\n\n(Memory context: ${memo})` : '';
 
+    if (settings.ttsLanguage === 'en') {
+      if (/(hello|hi|hey|namaste)/.test(t)) return `Hello ${name}! I am listening.`;
+      if (/(kaise ho|how are you)/.test(t)) return `I am doing well, ${name}. How can I help you?`;
+      if (/(your name|aap kaun|tumhara naam)/.test(t)) return `I am MYRA, your AI voice assistant.${memoLine}`;
+      if (/(thank|shukriya)/.test(t)) return `You are welcome, ${name}.`;
+      if (/(joke|mazaak)/.test(t)) return `Here is a tiny joke: Why did the computer smile? Because it found its cache.`;
+      if (/(time|kitne baje)/.test(t)) return `It is ${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}.`;
+      return `I understand, ${name}. Tell me what you need.`;
+    }
+
     if (/(hello|hi|hey|namaste)/.test(t)) return settings.personalityMode === 'gf' ? `Haan ${name}! Tumne yaad kiya? 😊` : `Hello ${name}!`;
     if (/(kaise ho|how are you)/.test(t)) return `Main theek hoon ${name}! Tum sunao ❤️`;
     if (/(your name|aap kaun|tumhara naam)/.test(t)) return `Main MYRA hoon ${name}! Tumhari AI companion 💖${memoLine}`;
@@ -201,9 +215,17 @@ export default function App() {
         speakTTSRef.current(r, () => { setOrbState('idle'); isSpeakingRef.current = false; });
       }
     },
-    onListeningChange: () => {},
-    onError: () => {},
-  }), []);
+    onListeningChange: (listening: boolean) => {
+      if (listening) {
+        setOrbState('listening');
+        setStatusText(settings.ttsLanguage === 'hi' ? '🔴 Sun rahi hoon...' : '🔴 Listening...');
+      }
+    },
+    onError: (err: string) => {
+      console.error('[Audio]', err);
+      setStatusText(`⚠️ ${err}`);
+    },
+  }), [settings.ttsLanguage]);
 
   const { isListening, isMuted, startListening, stopListening, setMuted, lastError: audioError, isSupported: audioSupported } = useAudioEngine(
     audioCallbacks,
@@ -256,35 +278,40 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Mic
+  // Mic — fixed: always start listening; demo mode also works without API key
   const handleMicPress = useCallback(() => {
     if (settings.hapticEnabled) vibrate(15);
+
     if (!audioSupported) {
-      setStatusText('Voice unsupported. Chrome/Edge browser use karein.');
+      setStatusText('🎤 Voice unsupported. Chrome ya Edge browser use karein.');
       return;
     }
+
+    // If currently muted, unmute and start
     if (isMuted) {
       setMuted(false);
-      window.setTimeout(() => startListening(), 100);
+      window.setTimeout(() => {
+        startListening().catch(() => {});
+      }, 150);
       return;
     }
-    if (isListening) { stopListening(); return; }
-    if (isConnected) { startListening(); return; }
-    // Not connected yet — try to connect then listen
-    if (hasAnyKey(settings)) {
-      setOrbState('thinking');
-      setStatusText('API key verify ho rahi hai... 🔄');
-      connect();
-      // Poll for connection, then start listening
-      const pollInterval = window.setInterval(() => {
-        if (isConnectedRef.current) {
-          clearInterval(pollInterval);
-          startListening();
-        }
-      }, 300);
-      // Timeout after 10s
-      setTimeout(() => clearInterval(pollInterval), 10000);
+
+    // If currently listening, stop
+    if (isListening) {
+      stopListening();
+      setStatusText('🎤 Mic stopped. Tap again to start.');
+      return;
     }
+
+    // Try to connect in background if API key exists but not connected
+    if (!isConnected && hasAnyKey(settings)) {
+      connect(); // fire-and-forget — start listening anyway
+    }
+
+    // Always start listening — demo mode handles when not connected
+    startListening().catch((err: any) => {
+      setStatusText(`🎤 Mic error: ${err?.message || 'Permission denied'}`);
+    });
   }, [isMuted, isListening, isConnected, connect, startListening, stopListening, setMuted, settings, audioSupported]);
 
   const handleLongPress = useCallback(() => {
@@ -296,10 +323,29 @@ export default function App() {
     setTimeout(() => { if (isMuted) setStatusText('Muted 🔇 — Tap mic to unmute'); }, 1500);
   }, [interruptSpeaking, stopListening, cancelTTS, setMuted, settings, isMuted]);
 
-  // Auto-connect
+  // Auto-connect on mount AND whenever provider/model/key changes
   useEffect(() => {
-    if (hasAnyKey(settings)) { const t = setTimeout(() => connect(), 600); return () => clearTimeout(t); }
-  }, []);
+    if (hasAnyKey(settings)) {
+      const t = setTimeout(() => { connect(); }, 400);
+      return () => clearTimeout(t);
+    }
+  }, [
+    settings.aiProvider,
+    settings.aiModel,
+    settings.apiKey,
+    settings.openaiKey,
+    settings.anthropicKey,
+    settings.groqKey,
+    settings.deepseekKey,
+    settings.xaiKey,
+    settings.mistralKey,
+    settings.openrouterKey,
+    settings.cohereKey,
+    settings.perplexityKey,
+    settings.togetherKey,
+    settings.fireworksKey,
+    settings.cerebrasKey,
+  ]);
 
   // Greeting on successful connect
   const hasGreetedRef = useRef(false);
@@ -456,10 +502,10 @@ export default function App() {
   const activeProviderConfig = PROVIDER_BY_ID[settings.aiProvider];
 
   return (
-    <div className="min-h-screen text-[#EEEEEE] font-sans relative overflow-hidden select-none" style={{ backgroundColor: '#050505' }}>
+    <div className="min-h-screen text-[#EEEEEE] font-sans relative overflow-x-hidden select-none flex flex-col" style={{ backgroundColor: '#050505' }}>
       {/* Background */}
-      <div className="fixed top-0 left-0 w-64 h-64 rounded-full blur-[100px] pointer-events-none" style={{ backgroundColor: `${theme.primary}10` }} />
-      <div className="fixed bottom-0 right-0 w-96 h-96 rounded-full blur-[120px] pointer-events-none" style={{ backgroundColor: `${theme.secondary}10` }} />
+      <div className="fixed top-0 left-0 w-48 sm:w-64 h-48 sm:h-64 rounded-full blur-[100px] pointer-events-none" style={{ backgroundColor: `${theme.primary}10` }} />
+      <div className="fixed bottom-0 right-0 w-72 sm:w-96 h-72 sm:h-96 rounded-full blur-[120px] pointer-events-none" style={{ backgroundColor: `${theme.secondary}10` }} />
       <div className="fixed inset-0 pointer-events-none z-10 transition-opacity duration-500" style={{ opacity: redOverlayAlpha, backgroundColor: theme.primary }} />
 
       {/* Offline indicator */}
@@ -469,111 +515,124 @@ export default function App() {
         </div>
       )}
 
-      {/* Top Bar */}
-      <div className="relative z-20 flex items-center justify-between px-4 pt-8 pb-2">
-        <div className="flex flex-col gap-0.5">
-          <span className="font-mono text-xs" style={{ color: theme.accent }}>{batteryStr}</span>
-          <span className="text-[#555] font-mono text-[10px]">{ramStr}</span>
-        </div>
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-2">
-            <MyraLogo size={30} accent={theme.primary} />
-            <h1 className="text-2xl font-black tracking-[0.3em] leading-none" style={{ color: theme.primary }}>MYRA</h1>
+      <div className="w-full max-w-3xl mx-auto flex flex-col flex-1 min-h-screen">
+
+        {/* Top Bar */}
+        <div className="relative z-20 flex items-center justify-between px-3 sm:px-5 pt-6 sm:pt-8 pb-2 gap-2">
+          <div className="flex flex-col gap-0.5 min-w-0">
+            <span className="font-mono text-[10px] sm:text-xs truncate" style={{ color: theme.accent }}>{batteryStr}</span>
+            <span className="text-[#555] font-mono text-[9px] sm:text-[10px] truncate">{ramStr}</span>
           </div>
-          <span className="text-[#555] font-mono text-[10px] tracking-[0.2em] mt-0.5">AI VOICE ASSISTANT v2.0</span>
-        </div>
-        <div className="flex flex-col items-end gap-0.5">
-          <span className="font-mono text-xs" style={{ color: theme.primary }}>{timeStr}</span>
-          <button
-            onClick={() => { if (!isConnected && connectionState === 'failed') connect(); else setShowProviderSettings(true); }}
-            className="text-[10px] bg-[#111] px-2 py-1 rounded-lg font-mono hover:opacity-80 flex items-center gap-1"
-            style={{ color: theme.primary }}
-            title={!isConnected ? 'Tap to reconnect' : 'Open provider settings'}
-          >
-            {activeProviderConfig?.icon} {activeProviderConfig?.shortName}
-            {!isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF6D6D] animate-pulse" />}
-            {isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00E676]" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Action chips */}
-      <div className="relative z-20 flex items-center justify-center gap-1.5 px-2 pb-2 flex-wrap">
-        <ActionChip icon="📂" label="Chats" badge={sessions.length} color={theme.primary} onClick={() => setShowSessions(true)} />
-        <ActionChip icon="🧠" label="Memory" badge={memories.length} color={theme.primary} onClick={() => setShowMemory(true)} />
-        <ActionChip icon="📊" label="Stats" color={theme.primary} onClick={() => setShowStats(true)} />
-        <ActionChip icon="🔍" label="Search" color={theme.primary} onClick={() => setShowSearch(true)} />
-        <ActionChip icon="🎨" label="Theme" color={theme.primary} onClick={() => setShowCustomize(true)} />
-        <ActionChip icon="⚙️" label="Settings" color={theme.primary} onClick={() => setShowSettings(true)} />
-        <ActionChip icon="📥" label="Backup" color={theme.primary} onClick={() => setShowBackup(true)} />
-        <ActionChip icon="🪙" label="Tokens" color={theme.primary} onClick={() => setShowTokens(true)} />
-        <ActionChip icon="ℹ️" label="About" color={theme.primary} onClick={() => setShowAbout(true)} />
-        <LanguageToggle
-          lang={settings.ttsLanguage}
-          onToggle={() => updateSettings({ ttsLanguage: settings.ttsLanguage === 'en' ? 'hi' : 'en' })}
-          color={theme.primary}
-        />
-      </div>
-
-      {/* Center Orb */}
-      <div className="relative z-20 flex flex-col items-center justify-center mt-2">
-        <OrbAnimation state={orbState} amplitude={amplitude} />
-        <div className="-mt-6"><WaveformView amplitude={amplitude} isActive={isListening || isSpeaking} /></div>
-        <p className="text-[#888] text-sm mt-2 font-mono text-center px-4">{statusText}</p>
-        <div className="mt-2 flex items-center gap-2 flex-wrap justify-center px-4">
-          <span className="text-[10px] text-[#666] font-mono bg-[#0E0E0E] px-2.5 py-1 rounded-full border" style={{ borderColor: `${theme.primary}22` }}>
-            {activeProviderConfig?.name} · {activeProviderConfig?.models.find(m => m.id === settings.aiModel)?.label || settings.aiModel}
-          </span>
-          {/* Connection status badge */}
-          <ConnectionBadge
-            isConnected={isConnected}
-            connectionState={connectionState}
-            lastError={lastValidationError}
-            onReconnect={connect}
-            accent={theme.primary}
-          />
-          {settings.streamingEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>⚡ STREAMING</span>}
-          {settings.wakeWordEnabled && (
-            <span
-              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-              title={wake.error || (wake.isActive ? 'Wake word listening' : 'Wake word enabled')}
-              style={{ backgroundColor: wake.isActive ? `${theme.primary}22` : '#1A0000', color: wake.isActive ? theme.primary : '#FF6D6D' }}
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <MyraLogo size={28} accent={theme.primary} />
+              <h1 className="text-xl sm:text-2xl font-black tracking-[0.25em] sm:tracking-[0.3em] leading-none" style={{ color: theme.primary }}>MYRA</h1>
+            </div>
+            <span className="text-[#555] font-mono text-[9px] sm:text-[10px] tracking-[0.15em] sm:tracking-[0.2em] mt-0.5">AI VOICE v2.5</span>
+          </div>
+          <div className="flex flex-col items-end gap-0.5 min-w-0">
+            <span className="font-mono text-[10px] sm:text-xs truncate" style={{ color: theme.primary }}>{timeStr}</span>
+            <button
+              onClick={() => { if (!isConnected && connectionState === 'failed') connect(); else setShowProviderSettings(true); }}
+              className="text-[9px] sm:text-[10px] bg-[#111] px-1.5 sm:px-2 py-1 rounded-lg font-mono hover:opacity-80 flex items-center gap-1 active:scale-95 transition-all"
+              style={{ color: theme.primary }}
+              title={!isConnected ? 'Tap to reconnect' : 'Open provider settings'}
             >
-              🎙️ {wake.isActive ? 'Wake ON' : wake.error ? 'Wake ERR' : `"${settings.wakeWord}"`}
-            </span>
-          )}
-          {audioError && (
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#1A0000] text-[#FF6D6D]" title={audioError}>
-              Mic issue
-            </span>
-          )}
-          {activeVoice && (
-            <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#111] text-[#888]" title={activeVoice.voiceURI}>
-              🔊 {activeVoice.name.slice(0, 20)}{activeVoice.name.length > 20 ? '…' : ''}
-            </span>
-          )}
+              <span className="hidden xs:inline">{activeProviderConfig?.icon}</span>
+              <span className="truncate max-w-[60px]">{activeProviderConfig?.shortName}</span>
+              {!isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF6D6D] animate-pulse flex-shrink-0" />}
+              {isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00E676] flex-shrink-0" />}
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="relative z-20 mt-3 px-2">
-        <QuickActions actions={settings.quickActions} onAction={handleQuickAction} accentColor={theme.primary} />
-      </div>
+        {/* Action chips — horizontal scroll on mobile */}
+        <div className="relative z-20 flex items-center gap-1.5 px-2 pb-2 overflow-x-auto sm:flex-wrap sm:justify-center hide-scrollbar">
+          <ActionChip icon="📂" label="Chats" badge={sessions.length} color={theme.primary} onClick={() => setShowSessions(true)} />
+          <ActionChip icon="🧠" label="Memory" badge={memories.length} color={theme.primary} onClick={() => setShowMemory(true)} />
+          <ActionChip icon="📊" label="Stats" color={theme.primary} onClick={() => setShowStats(true)} />
+          <ActionChip icon="🔍" label="Search" color={theme.primary} onClick={() => setShowSearch(true)} />
+          <ActionChip icon="🎨" label="Theme" color={theme.primary} onClick={() => setShowCustomize(true)} />
+          <ActionChip icon="⚙️" label="Settings" color={theme.primary} onClick={() => setShowSettings(true)} />
+          <ActionChip icon="📥" label="Backup" color={theme.primary} onClick={() => setShowBackup(true)} />
+          <ActionChip icon="🪙" label="Tokens" color={theme.primary} onClick={() => setShowTokens(true)} />
+          <ActionChip icon="ℹ️" label="About" color={theme.primary} onClick={() => setShowAbout(true)} />
+          <LanguageToggle
+            lang={settings.ttsLanguage}
+            onToggle={() => updateSettings({ ttsLanguage: settings.ttsLanguage === 'en' ? 'hi' : 'en' })}
+            color={theme.primary}
+          />
+        </div>
 
-      {/* Chat */}
-      <div className="relative z-20 mx-4 mt-3">
-        <ChatPanel messages={messages} accentColor={theme.primary} streamingText={streamingText} />
-        <TypingIndicator active={isThinking && !streamingText} accentColor={theme.primary} />
-      </div>
+        {/* Center Orb */}
+        <div className="relative z-20 flex flex-col items-center justify-center mt-2 px-3">
+          <div className="scale-75 sm:scale-90 md:scale-100 origin-center">
+            <OrbAnimation state={orbState} amplitude={amplitude} />
+          </div>
+          <div className="-mt-4 sm:-mt-6"><WaveformView amplitude={amplitude} isActive={isListening || isSpeaking} /></div>
+          <p className="text-[#888] text-xs sm:text-sm mt-2 font-mono text-center break-words max-w-full px-2">{statusText}</p>
+          <div className="mt-2 flex items-center gap-1.5 flex-wrap justify-center max-w-full">
+            <span className="text-[9px] sm:text-[10px] text-[#666] font-mono bg-[#0E0E0E] px-2 sm:px-2.5 py-1 rounded-full border truncate max-w-[200px] sm:max-w-none" style={{ borderColor: `${theme.primary}22` }}>
+              {activeProviderConfig?.shortName} · {(activeProviderConfig?.models.find(m => m.id === settings.aiModel)?.label || settings.aiModel).slice(0, 24)}
+            </span>
+            <ConnectionBadge
+              isConnected={isConnected}
+              connectionState={connectionState}
+              lastError={lastValidationError}
+              onReconnect={connect}
+              accent={theme.primary}
+            />
+            {settings.streamingEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>⚡ STREAM</span>}
+            {settings.wakeWordEnabled && (
+              <span
+                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                title={wake.error || (wake.isActive ? 'Wake word listening' : 'Wake word enabled')}
+                style={{ backgroundColor: wake.isActive ? `${theme.primary}22` : '#1A0000', color: wake.isActive ? theme.primary : '#FF6D6D' }}
+              >
+                🎙️ {wake.isActive ? 'Wake ON' : wake.error ? 'Wake ERR' : 'Wake'}
+              </span>
+            )}
+            {audioError && (
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#1A0000] text-[#FF6D6D]" title={audioError}>
+                Mic issue
+              </span>
+            )}
+            {activeVoice && (
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#111] text-[#888] truncate max-w-[140px]" title={`${activeVoice.name} (${activeVoice.lang}) · Profile: ${settings.geminiVoice}`}>
+                🔊 {settings.geminiVoice} · {activeVoice.name.slice(0, 14)}{activeVoice.name.length > 14 ? '…' : ''}
+              </span>
+            )}
+          </div>
+        </div>
 
-      {/* Text Input */}
-      <div className="relative z-20 mx-2">
-        <InputBar onSend={handleSendText} accentColor={theme.primary} />
-      </div>
+        {/* Quick Actions */}
+        <div className="relative z-20 mt-3 px-2">
+          <QuickActions actions={settings.quickActions} onAction={handleQuickAction} accentColor={theme.primary} />
+        </div>
 
-      {/* Mic */}
-      <div className="relative z-20 flex justify-center mt-1 pb-4">
-        <MicButton isListening={isListening} isSpeaking={isSpeaking} isMuted={isMuted} onPress={handleMicPress} onLongPress={handleLongPress} />
+        {/* Chat */}
+        <div className="relative z-20 mx-2 sm:mx-4 mt-3 flex-1 min-h-[200px]">
+          <ChatPanel messages={messages} accentColor={theme.primary} streamingText={streamingText} />
+          <TypingIndicator active={isThinking && !streamingText} accentColor={theme.primary} />
+        </div>
+
+        {/* Text Input */}
+        <div className="relative z-20 mx-2">
+          <InputBar onSend={handleSendText} accentColor={theme.primary} />
+        </div>
+
+        {/* Mic */}
+        <div className="relative z-20 flex justify-center mt-1 pb-4 sm:pb-6">
+          <MicButton
+            isListening={isListening}
+            isSpeaking={isSpeaking}
+            isMuted={isMuted}
+            onPress={handleMicPress}
+            onLongPress={handleLongPress}
+            accentColor={theme.primary}
+          />
+        </div>
+
       </div>
 
       {/* ===== MODALS ===== */}

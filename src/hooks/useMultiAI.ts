@@ -69,6 +69,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
   const genAIRef = useRef<GoogleGenerativeAI | null>(null);
   const geminiChatRef = useRef<any>(null);
   const historiesRef = useRef<Record<string, ChatMessagePayload[]>>({});
+  const validatedModelsRef = useRef<Record<string, string>>({});
 
   useEffect(() => {
     callbacksRef.current = callbacks;
@@ -78,7 +79,14 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
     setActiveProvider(settings.aiProvider);
     setIsConnected(false);
     geminiChatRef.current = null;
+    genAIRef.current = null;
   }, [settings.aiProvider, settings.aiModel]);
+
+  // Clear gemini chat when language/personality changes so new system prompt applies
+  useEffect(() => {
+    geminiChatRef.current = null;
+    historiesRef.current = {};
+  }, [settings.ttsLanguage, settings.personalityMode, settings.customSystemPrompt]);
 
   const getSystemPrompt = useCallback(() => {
     const now = new Date();
@@ -96,8 +104,13 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
       ? `\n\nAdditional instructions from user:\n${settings.customSystemPrompt.trim()}`
       : '';
 
-    return `${PERSONALITY_SYSTEM_PROMPTS[settings.personalityMode]}\nCurrent date: ${dateStr}\nCurrent time: ${timeStr}\n${namePart}\nYou are speaking ALOUD - keep responses natural and conversational. Remember: you are MYRA.${customExtra}`;
-  }, [settings.personalityMode, settings.userName, settings.customSystemPrompt]);
+    // CRITICAL LANGUAGE RULE
+    const langRule = settings.ttsLanguage === 'hi'
+      ? `\n\n=== LANGUAGE RULE (CRITICAL) ===\nALWAYS respond in HINDI (Devanagari script + simple Hindi words). The user's TTS is set to Hindi. Even if user asks in English, REPLY IN HINDI. Use natural conversational Hindi like "हाँ", "ज़रूर", "बिल्कुल". You may mix common English words like "phone", "battery", "WiFi" but the SENTENCE STRUCTURE MUST BE HINDI. Never reply in pure English.`
+      : `\n\n=== LANGUAGE RULE (CRITICAL) ===\nALWAYS respond in ENGLISH. The user's TTS is set to English. Even if user asks in Hindi or Hinglish, REPLY IN ENGLISH. Use natural conversational English. Never reply in Hindi/Devanagari script. Never use Hinglish words like "haan", "tumhara", "acha". Always pure English.`;
+
+    return `${PERSONALITY_SYSTEM_PROMPTS[settings.personalityMode]}${langRule}\nCurrent date: ${dateStr}\nCurrent time: ${timeStr}\n${namePart}\nYou are speaking ALOUD - keep responses natural and conversational. Remember: you are MYRA.${customExtra}`;
+  }, [settings.personalityMode, settings.userName, settings.customSystemPrompt, settings.ttsLanguage]);
 
   const speakText = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) {
@@ -131,49 +144,69 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
 
   const getKey = useCallback((provider: ProviderConfig) => String(settings[provider.keyField] || '').trim(), [settings]);
 
-  const validateConnection = useCallback(async (provider: ProviderConfig): Promise<{ ok: boolean; error?: string }> => {
+  const getRuntimeModel = useCallback((provider: ProviderConfig) => {
+    return validatedModelsRef.current[provider.id] || getSelectedModel(settings, provider);
+  }, [settings]);
+
+  const validateConnection = useCallback(async (provider: ProviderConfig): Promise<{ ok: boolean; error?: string; model?: string }> => {
     try {
+      const selectedModel = getSelectedModel(settings, provider);
+      const candidates = Array.from(new Set([selectedModel, provider.defaultModel].filter(Boolean)));
+
       if (provider.mode === 'gemini') {
         const key = getKey(provider);
         if (!key) return { ok: false, error: 'Gemini API key missing' };
         const genAI = new GoogleGenerativeAI(key);
-        const model = genAI.getGenerativeModel({
-          model: getSelectedModel(settings, provider),
-          generationConfig: { maxOutputTokens: 1 },
-        });
-        await model.generateContent('test');
-        return { ok: true };
+        let lastError = '';
+        for (const modelId of candidates) {
+          try {
+            const model = genAI.getGenerativeModel({ model: modelId, generationConfig: { maxOutputTokens: 1 } });
+            await model.generateContent('test');
+            return { ok: true, model: modelId };
+          } catch (error: any) {
+            lastError = error?.message || 'Gemini validation failed';
+          }
+        }
+        return { ok: false, error: lastError };
       }
 
       if (provider.mode === 'anthropic') {
         const key = getKey(provider);
         if (!key) return { ok: false, error: 'Anthropic API key missing' };
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true',
-          },
-          body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1, messages: [{ role: 'user', content: 'p' }] }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) return { ok: false, error: data?.error?.message || `Status ${res.status}` };
-        return { ok: true };
+        let lastError = '';
+        for (const modelId of candidates) {
+          const res = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': key,
+              'anthropic-version': '2023-06-01',
+              'anthropic-dangerous-direct-browser-access': 'true',
+            },
+            body: JSON.stringify({ model: modelId, max_tokens: 1, messages: [{ role: 'user', content: 'p' }] }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) return { ok: true, model: modelId };
+          lastError = data?.error?.message || `Status ${res.status}`;
+        }
+        return { ok: false, error: lastError };
       }
 
       if (provider.mode === 'cohere') {
         const key = getKey(provider);
         if (!key) return { ok: false, error: 'Cohere API key missing' };
-        const res = await fetch('https://api.cohere.ai/v2/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-          body: JSON.stringify({ model: 'command-a-03-2025', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) return { ok: false, error: data?.message || `Status ${res.status}` };
-        return { ok: true };
+        let lastError = '';
+        for (const modelId of candidates) {
+          const res = await fetch('https://api.cohere.ai/v2/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+            body: JSON.stringify({ model: modelId, max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok) return { ok: true, model: modelId };
+          lastError = data?.message || `Status ${res.status}`;
+        }
+        return { ok: false, error: lastError };
       }
 
       // OpenAI-compatible providers
@@ -190,19 +223,18 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
         headers['X-Title'] = 'MYRA';
       }
 
-      const res = await fetch(provider.endpoint, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: getSelectedModel(settings, provider),
-          messages: [{ role: 'user', content: 'p' }],
-          max_tokens: 1,
-          stream: false,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) return { ok: false, error: data?.error?.message || `Status ${res.status}` };
-      return { ok: true };
+      let lastError = '';
+      for (const modelId of candidates) {
+        const res = await fetch(provider.endpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ model: modelId, messages: [{ role: 'user', content: 'p' }], max_tokens: 1, stream: false }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) return { ok: true, model: modelId };
+        lastError = data?.error?.message || `Status ${res.status}`;
+      }
+      return { ok: false, error: lastError };
     } catch (e: any) {
       if (e?.message?.includes('Failed to fetch')) {
         return { ok: false, error: 'CORS blocked — use production proxy' };
@@ -231,7 +263,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
 
     if (!geminiChatRef.current) {
       const model = genAIRef.current.getGenerativeModel({
-        model: getSelectedModel(settings, provider),
+        model: getRuntimeModel(provider),
         systemInstruction: getSystemPrompt(),
         generationConfig: { temperature: 0.9, maxOutputTokens: 256 },
       });
@@ -271,7 +303,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: getSelectedModel(settings, provider),
+        model: getRuntimeModel(provider),
         messages,
         max_tokens: 256,
         temperature: 0.9,
@@ -356,7 +388,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify({
-        model: getSelectedModel(settings, provider),
+        model: getRuntimeModel(provider),
         max_tokens: 256,
         system: getSystemPrompt(),
         messages,
@@ -396,7 +428,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
         Authorization: `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: getSelectedModel(settings, provider),
+        model: getRuntimeModel(provider),
         messages,
         max_tokens: 256,
         temperature: 0.9,
@@ -439,6 +471,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
     const result = await validateConnection(provider);
 
     if (result.ok) {
+      validatedModelsRef.current[provider.id] = result.model || getSelectedModel(settings, provider);
       setConnectionState('connected');
       setIsConnected(true);
       callbacksRef.current.onStateChange('connected');

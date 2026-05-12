@@ -30,7 +30,7 @@ export default function ChatPanel({ messages, className = '', accentColor = '#FF
     <div
       ref={scrollRef}
       className={`overflow-y-auto space-y-3 px-3 py-2 ${className}`}
-      style={{ height: '200px', scrollBehavior: 'smooth' }}
+      style={{ height: 'clamp(180px, 28vh, 340px)', scrollBehavior: 'smooth' }}
     >
       {messages.length === 0 && !streamingText && (
         <div className="flex items-center justify-center h-full">

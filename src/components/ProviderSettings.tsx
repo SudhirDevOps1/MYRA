@@ -11,11 +11,19 @@ interface ProviderSettingsProps {
 
 export default function ProviderSettings({ settings, onUpdate, onClose }: ProviderSettingsProps) {
   const [activeTab, setActiveTab] = useState<'provider' | 'keys'>('provider');
+  const [modelSearch, setModelSearch] = useState('');
   const activeProvider = PROVIDER_BY_ID[settings.aiProvider] || PROVIDER_BY_ID.gemini;
   const activeModel = useMemo(() => {
     const modelExists = activeProvider.models.some(model => model.id === settings.aiModel);
     return modelExists ? settings.aiModel : activeProvider.defaultModel;
   }, [activeProvider, settings.aiModel]);
+  const filteredModels = useMemo(() => {
+    const q = modelSearch.trim().toLowerCase();
+    if (!q) return activeProvider.models;
+    return activeProvider.models.filter(model =>
+      model.id.toLowerCase().includes(q) || model.label.toLowerCase().includes(q)
+    );
+  }, [activeProvider, modelSearch]);
 
   const handleProviderChange = (provider: AIProvider) => {
     const nextProvider = PROVIDER_BY_ID[provider];
@@ -32,7 +40,7 @@ export default function ProviderSettings({ settings, onUpdate, onClose }: Provid
             <MyraLogo size={34} accent="#FF1744" />
             <div>
               <h2 className="text-[#FF1744] text-xl font-black tracking-wider">AI PROVIDER</h2>
-              <p className="text-[#666] text-xs font-mono mt-1">10+ engines, one MYRA voice</p>
+              <p className="text-[#666] text-xs font-mono mt-1">13 engines · 20+ models each</p>
             </div>
           </div>
           <button onClick={onClose} className="text-[#888] hover:text-white transition-colors">
@@ -87,7 +95,7 @@ export default function ProviderSettings({ settings, onUpdate, onClose }: Provid
                     </span>
                     <div className="min-w-0">
                       <span className="text-white font-bold text-xs block truncate">{provider.shortName}</span>
-                      <span className="text-[#666] text-[10px] block">{provider.models.length} models</span>
+                      <span className="text-[#666] text-[10px] block">{provider.models.length}+ models</span>
                     </div>
                   </div>
                 </button>
@@ -98,17 +106,27 @@ export default function ProviderSettings({ settings, onUpdate, onClose }: Provid
               <label className="text-[#999] text-xs font-mono uppercase tracking-wider block mb-1.5">
                 Active Model for {activeProvider.name}
               </label>
+              <input
+                value={modelSearch}
+                onChange={event => setModelSearch(event.target.value)}
+                placeholder={`Search ${activeProvider.models.length}+ models...`}
+                className="w-full mb-2 bg-[#0E0E0E] border border-[#333] rounded-xl px-4 py-2 text-[#EEE] text-xs focus:border-[#FF1744] focus:outline-none placeholder:text-[#555]"
+              />
               <select
                 value={activeModel}
                 onChange={event => onUpdate({ aiModel: event.target.value })}
                 className="w-full bg-[#111] border border-[#333] rounded-xl px-4 py-2.5 text-[#EEE] text-sm focus:border-[#FF1744] focus:outline-none transition-colors"
               >
-                {activeProvider.models.map(model => (
+                {filteredModels.map(model => (
                   <option key={model.id} value={model.id} className="bg-[#111]">
-                    {model.label}
+                    {model.free ? 'FREE · ' : ''}{model.label}
                   </option>
                 ))}
               </select>
+              <div className="flex items-center justify-between mt-1 text-[10px] text-[#666] font-mono">
+                <span>{filteredModels.length} shown / {activeProvider.models.length} total</span>
+                <span>{activeProvider.models.filter(model => model.free).length} free-friendly</span>
+              </div>
             </div>
 
             <div className="bg-[#101010] border border-[#2A2A2A] rounded-xl p-3">

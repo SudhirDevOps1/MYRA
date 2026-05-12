@@ -129,18 +129,19 @@ export default function App() {
     onResponseTime: (ms: number) => recordResponseTime(ms),
     onStateChange: (state: string) => {
       switch (state) {
-        case 'connected': setStatusText('Connected ✓'); setIsThinking(false); break;
-        case 'thinking':  setOrbState('thinking');  setIsThinking(true);  setStatusText('Soch rahi hoon... 💭'); break;
-        case 'speaking':  setOrbState('speaking');  isSpeakingRef.current = true;  setIsThinking(false); setStatusText('Bol rahi hoon... 💜'); break;
-        case 'listening': setOrbState('listening'); setIsThinking(false); setStatusText('Sun rahi hoon... 🔴'); break;
-        case 'idle':      setOrbState('idle');      isSpeakingRef.current = false; setIsThinking(false); setStatusText('Tap karke bolo 💬'); break;
+        case 'connected':   setStatusText('Connected ✓ Ready!'); setIsThinking(false); break;
+        case 'connecting':  setStatusText('API key verify ho rahi hai... 🔄'); setOrbState('thinking'); setIsThinking(true); break;
+        case 'thinking':    setOrbState('thinking');  setIsThinking(true);  setStatusText('Soch rahi hoon... 💭'); break;
+        case 'speaking':    setOrbState('speaking');  isSpeakingRef.current = true;  setIsThinking(false); setStatusText('Bol rahi hoon... 💜'); break;
+        case 'listening':   setOrbState('listening'); setIsThinking(false); setStatusText('Sun rahi hoon... 🔴'); break;
+        case 'idle':        setOrbState('idle');      isSpeakingRef.current = false; setIsThinking(false); setStatusText('Tap karke bolo 💬'); break;
       }
     },
     onError: (error: string) => { setStatusText(error); setOrbState('idle'); setIsThinking(false); },
     speakOverride: (text: string, onEnd?: () => void) => speakTTS(text, () => onEnd?.()),
   }), [addMessage, recordResponseTime, speakTTS]);
 
-  const { isConnected, isSpeaking, connect, sendText, interruptSpeaking, clearConversation } =
+  const { isConnected, isSpeaking, connect, sendText, interruptSpeaking, clearConversation, connectionState, lastValidationError } =
     useMultiAI(settings, aiCallbacks);
 
   const { parse, executeCommand } = useCommandParser(settings.primeContacts);
@@ -243,8 +244,13 @@ export default function App() {
     if (isMuted) { setMuted(false); return; }
     if (isListening) stopListening();
     else {
-      if (!isConnected && hasAnyKey(settings)) connect();
-      startListening();
+      if (!isConnected && hasAnyKey(settings)) {
+        setOrbState('thinking');
+        setStatusText('API key verify ho rahi hai... 🔄');
+        connect().then(() => { startListening(); });
+      } else {
+        startListening();
+      }
     }
   }, [isMuted, isListening, isConnected, connect, startListening, stopListening, setMuted, settings]);
 
@@ -262,24 +268,28 @@ export default function App() {
     if (hasAnyKey(settings)) { const t = setTimeout(() => connect(), 600); return () => clearTimeout(t); }
   }, []);
 
-  // Greeting
+  // Greeting on successful connect
+  const hasGreetedRef = useRef(false);
   useEffect(() => {
-    if (isConnected && messages.length === 0) {
+    if (isConnected && !hasGreetedRef.current) {
+      hasGreetedRef.current = true;
       const t = setTimeout(() => {
         const g: Record<string, string> = {
           gf: `Hey${settings.userName ? ' ' + settings.userName : ''}! Main aa gayi hoon ❤️`,
-          professional: `Good day${settings.userName ? ' ' + settings.userName : ''}. MYRA online.`,
-          assistant: `Hello${settings.userName ? ' ' + settings.userName : ''}! Main MYRA hoon.`,
+          professional: `Good day${settings.userName ? ' ' + settings.userName : ''}. MYRA online and ready.`,
+          assistant: `Hello${settings.userName ? ' ' + settings.userName : ''}! Main MYRA hoon. Connected!`,
         };
         sendText(g[settings.personalityMode] || g.gf);
       }, 800);
       return () => clearTimeout(t);
     }
+    if (!isConnected) hasGreetedRef.current = false;
+
     if (!hasAnyKey(settings) && messages.length === 0) {
       const t = setTimeout(() => {
         const greeting = settings.personalityMode === 'gf'
-          ? `Hey${settings.userName ? ' ' + settings.userName : ''}! Main MYRA hoon. Provider settings mein API key daalo — Gemini, Groq, Grok, GPT, Claude, Mistral, Cohere, Perplexity, OpenRouter, Together, Fireworks, DeepSeek, Cerebras — sab supported hain! Tab tak demo mode 💖`
-          : `Hi${settings.userName ? ' ' + settings.userName : ''}! MYRA in demo mode. Add an API key in Provider settings.`;
+          ? `Hey${settings.userName ? ' ' + settings.userName : ''}! Main MYRA hoon. Provider settings mein API key daalo. Tab tak demo mode 💖`
+          : `Hi${settings.userName ? ' ' + settings.userName : ''}! MYRA in demo mode. Add an API key.`;
         setMessages([{ text: greeting, isUser: false, timestamp: Date.now(), id: generateId() }]);
         lastMyraTextRef.current = greeting;
         speakTTS(greeting);
@@ -438,8 +448,15 @@ export default function App() {
         </div>
         <div className="flex flex-col items-end gap-0.5">
           <span className="font-mono text-xs" style={{ color: theme.primary }}>{timeStr}</span>
-          <button onClick={() => setShowProviderSettings(true)} className="text-[10px] bg-[#111] px-2 py-1 rounded-lg font-mono hover:opacity-80" style={{ color: theme.primary }}>
+          <button
+            onClick={() => { if (!isConnected && connectionState === 'failed') connect(); else setShowProviderSettings(true); }}
+            className="text-[10px] bg-[#111] px-2 py-1 rounded-lg font-mono hover:opacity-80 flex items-center gap-1"
+            style={{ color: theme.primary }}
+            title={!isConnected ? 'Tap to reconnect' : 'Open provider settings'}
+          >
             {activeProviderConfig?.icon} {activeProviderConfig?.shortName}
+            {!isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#FF6D6D] animate-pulse" />}
+            {isConnected && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#00E676]" />}
           </button>
         </div>
       </div>
@@ -464,8 +481,16 @@ export default function App() {
         <p className="text-[#888] text-sm mt-2 font-mono text-center px-4">{statusText}</p>
         <div className="mt-2 flex items-center gap-2 flex-wrap justify-center px-4">
           <span className="text-[10px] text-[#666] font-mono bg-[#0E0E0E] px-2.5 py-1 rounded-full border" style={{ borderColor: `${theme.primary}22` }}>
-            {activeProviderConfig?.name} · {activeProviderConfig?.models.find(m => m.id === settings.aiModel)?.label || settings.aiModel}{isConnected ? ' ✓' : ' ○'}
+            {activeProviderConfig?.name} · {activeProviderConfig?.models.find(m => m.id === settings.aiModel)?.label || settings.aiModel}
           </span>
+          {/* Connection status badge */}
+          <ConnectionBadge
+            isConnected={isConnected}
+            connectionState={connectionState}
+            lastError={lastValidationError}
+            onReconnect={connect}
+            accent={theme.primary}
+          />
           {settings.streamingEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>⚡ STREAMING</span>}
           {settings.wakeWordEnabled && <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#1A0000] text-[#FF6D6D]">🎙️ "{settings.wakeWord}"</span>}
         </div>
@@ -527,6 +552,42 @@ export default function App() {
         <button onClick={() => (window as any).simulateIncomingCall?.('Priya')} className="text-[10px] text-[#555] bg-[#111] px-2 py-1 rounded">📞 Demo Call</button>
       </div>
     </div>
+  );
+}
+
+function ConnectionBadge({ isConnected, connectionState, lastError, onReconnect, accent }: {
+  isConnected: boolean; connectionState: string; lastError: string; onReconnect: () => void; accent: string;
+}) {
+  if (connectionState === 'connecting') {
+    return (
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full animate-pulse flex items-center gap-1 bg-[#1A1A00] text-[#FFE066]" title="Validating API key...">
+        🔄 Verifying
+      </span>
+    );
+  }
+  if (connectionState === 'failed') {
+    return (
+      <button
+        onClick={onReconnect}
+        className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 bg-[#1A0000] text-[#FF6D6D] hover:bg-[#2A0000] transition-colors"
+        title={lastError || 'Connection failed — tap to retry'}
+        style={{ borderColor: `${accent}55` }}
+      >
+        ❌ {lastError ? 'Retry' : 'Reconnect'}
+      </button>
+    );
+  }
+  if (isConnected) {
+    return (
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 bg-[#001A00] text-[#00E676]" style={{ backgroundColor: `${accent}18`, color: accent }}>
+        ✓ Connected
+      </span>
+    );
+  }
+  return (
+    <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 bg-[#111] text-[#666]">
+      ○ Offline
+    </span>
   );
 }
 

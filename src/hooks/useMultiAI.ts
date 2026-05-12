@@ -131,16 +131,93 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
 
   const getKey = useCallback((provider: ProviderConfig) => String(settings[provider.keyField] || '').trim(), [settings]);
 
+  const validateConnection = useCallback(async (provider: ProviderConfig): Promise<{ ok: boolean; error?: string }> => {
+    try {
+      if (provider.mode === 'gemini') {
+        const key = getKey(provider);
+        if (!key) return { ok: false, error: 'Gemini API key missing' };
+        const genAI = new GoogleGenerativeAI(key);
+        const model = genAI.getGenerativeModel({
+          model: getSelectedModel(settings, provider),
+          generationConfig: { maxOutputTokens: 1 },
+        });
+        await model.generateContent('test');
+        return { ok: true };
+      }
+
+      if (provider.mode === 'anthropic') {
+        const key = getKey(provider);
+        if (!key) return { ok: false, error: 'Anthropic API key missing' };
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
+          },
+          body: JSON.stringify({ model: 'claude-3-5-haiku-20241022', max_tokens: 1, messages: [{ role: 'user', content: 'p' }] }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return { ok: false, error: data?.error?.message || `Status ${res.status}` };
+        return { ok: true };
+      }
+
+      if (provider.mode === 'cohere') {
+        const key = getKey(provider);
+        if (!key) return { ok: false, error: 'Cohere API key missing' };
+        const res = await fetch('https://api.cohere.ai/v2/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+          body: JSON.stringify({ model: 'command-a-03-2025', max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return { ok: false, error: data?.message || `Status ${res.status}` };
+        return { ok: true };
+      }
+
+      // OpenAI-compatible providers
+      if (!provider.endpoint) return { ok: false, error: 'No endpoint configured' };
+      const key = getKey(provider);
+      if (!key) return { ok: false, error: `${provider.name} API key missing` };
+
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+      };
+      if (provider.id === 'openrouter') {
+        headers['HTTP-Referer'] = window.location.origin;
+        headers['X-Title'] = 'MYRA';
+      }
+
+      const res = await fetch(provider.endpoint, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: getSelectedModel(settings, provider),
+          messages: [{ role: 'user', content: 'p' }],
+          max_tokens: 1,
+          stream: false,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { ok: false, error: data?.error?.message || `Status ${res.status}` };
+      return { ok: true };
+    } catch (e: any) {
+      if (e?.message?.includes('Failed to fetch')) {
+        return { ok: false, error: 'CORS blocked — use production proxy' };
+      }
+      return { ok: false, error: e?.message || 'Unknown error' };
+    }
+  }, [getKey, settings]);
+
   const ensureConnected = useCallback(() => {
     const provider = getProvider(settings);
     const key = getKey(provider);
     if (!key) {
-      callbacksRef.current.onError(`${provider.name} API key missing. Provider settings mein key add karo.`);
       setIsConnected(false);
       return false;
     }
-    setIsConnected(true);
-    callbacksRef.current.onStateChange('connected');
     return true;
   }, [getKey, settings]);
 
@@ -340,9 +417,40 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
     return reply;
   }, [getKey, getSystemPrompt, settings]);
 
+  const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected' | 'failed'>('disconnected');
+  const [lastValidationError, setLastValidationError] = useState('');
+
   const connect = useCallback(async () => {
-    ensureConnected();
-  }, [ensureConnected]);
+    const provider = getProvider(settings);
+    const key = getKey(provider);
+    if (!key) {
+      setConnectionState('disconnected');
+      setLastValidationError(`${provider.name} API key missing. Settings mein key daalo.`);
+      callbacksRef.current.onError(lastValidationError);
+      setIsConnected(false);
+      return;
+    }
+
+    setConnectionState('connecting');
+    setLastValidationError('');
+    callbacksRef.current.onStateChange('connecting');
+    setIsConnected(false);
+
+    const result = await validateConnection(provider);
+
+    if (result.ok) {
+      setConnectionState('connected');
+      setIsConnected(true);
+      callbacksRef.current.onStateChange('connected');
+      setLastValidationError('');
+    } else {
+      setConnectionState('failed');
+      setIsConnected(false);
+      setLastValidationError(result.error || 'Connection failed');
+      callbacksRef.current.onError(`❌ ${provider.name}: ${result.error || 'Connection failed. Check API key.'}`);
+      callbacksRef.current.onStateChange('idle');
+    }
+  }, [validateConnection, getKey, settings, getProvider]);
 
   const sendText = useCallback(async (text: string) => {
     const provider = getProvider(settings);
@@ -419,5 +527,7 @@ export function useMultiAI(settings: AppSettings, callbacks: MultiAICallbacks) {
     sendText,
     interruptSpeaking,
     clearConversation,
+    connectionState,
+    lastValidationError,
   };
 }
